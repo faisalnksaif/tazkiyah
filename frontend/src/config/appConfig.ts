@@ -6,7 +6,7 @@ export const appConfig = {
   version: '1.0.0',
   logo: null as string | null, // path to logo asset, if/when added
   defaultChallengeDurationDays: 21,
-  apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:4000/api',
+  apiBaseUrl: 'https://api.sulthanpages.com/tazkiyah/api',
 };
 
 export type AppConfig = typeof appConfig;

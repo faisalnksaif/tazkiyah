@@ -12,14 +12,14 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: buildTheme('light'),
-  mode: 'light',
+  theme: buildTheme('dark'),
+  mode: 'dark',
   setMode: () => {},
   toggleMode: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>('light');
+  const [mode, setModeState] = useState<ThemeMode>('dark');
 
   useEffect(() => {
     AsyncStorage.getItem(THEME_MODE_KEY).then((stored) => {

@@ -32,3 +32,10 @@ walk(DIST_DIR, (filePath) => {
 });
 
 console.log(`Rewrote absolute asset paths to "${BASE_PATH}" prefix in ${filesChanged} file(s).`);
+
+// GitHub Pages runs Jekyll by default, which silently excludes any
+// directory starting with an underscore (e.g. "_expo/") from the published
+// output — causing 404s on the JS bundle even though it's in the branch.
+// This opts out of Jekyll processing entirely.
+fs.writeFileSync(path.join(DIST_DIR, '.nojekyll'), '');
+console.log('Added .nojekyll to disable Jekyll processing.');
