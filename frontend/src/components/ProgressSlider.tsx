@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { PanResponder, StyleSheet, View } from 'react-native';
+import { PanResponder, StyleSheet, View, ViewStyle } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 
 interface ProgressSliderProps {
@@ -65,13 +65,17 @@ export function ProgressSlider({ total, targetValue, step, onDragValueChange, on
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
+    // Once a drag has been claimed, don't let the parent ScrollView/FlatList
+    // steal it mid-gesture — without this, real touchscreens intermittently
+    // hand the responder back to the list's vertical-scroll recognizer,
+    // which looks like the slider randomly "not updating."
+    onPanResponderTerminationRequest: () => false,
     onPanResponderGrant: (evt) => {
       draggingRef.current = true;
-      trackRef.current?.measure((_x, _y, width, _height, pageX) => {
-        trackWidth.current = width;
-        trackPageX.current = pageX;
-        setValue(valueFromPageX(evt.nativeEvent.pageX));
-      });
+      // Use the width/position already captured by onLayout — re-measuring
+      // here is async and can resolve after the first touchmove events on
+      // mobile, so those moves would read stale (often zero) track width.
+      setValue(valueFromPageX(evt.nativeEvent.pageX));
     },
     onPanResponderMove: (evt) => {
       setValue(valueFromPageX(evt.nativeEvent.pageX));
@@ -91,7 +95,14 @@ export function ProgressSlider({ total, targetValue, step, onDragValueChange, on
     // justifyContent — avoids relying on padding-box vs. border-box behavior
     // for the absolutely-positioned thumb (RN and web disagree on that), so
     // centering can't drift between platforms.
-    touchArea: { height: THUMB_SIZE, justifyContent: 'center' },
+    touchArea: {
+      height: THUMB_SIZE,
+      justifyContent: 'center',
+      // Web-only: stops mobile browsers from interpreting a horizontal drag
+      // here as a page/list scroll gesture, which otherwise intermittently
+      // wins the touch away from our PanResponder mid-drag.
+      touchAction: 'none',
+    } as ViewStyle,
     track: {
       height: TRACK_HEIGHT,
       borderRadius: TRACK_HEIGHT / 2,
