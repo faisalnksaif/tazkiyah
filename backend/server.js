@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 const routes = require('./routes');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 const appConfig = require('./config/appConfig');
+const PrayerReminderScheduler = require('./services/PrayerReminderScheduler');
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,7 @@ async function start() {
   if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not set (see .env.example)');
 
   await connectDB(process.env.MONGO_URI);
+  PrayerReminderScheduler.start();
   app.listen(PORT, () => console.log(`${appConfig.appName} API listening on port ${PORT}`));
 }
 

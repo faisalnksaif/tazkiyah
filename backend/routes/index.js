@@ -5,6 +5,7 @@ const challengeRoutes = require('./challengeRoutes');
 const entryRoutes = require('./entryRoutes');
 const scoreRoutes = require('./scoreRoutes');
 const userRoutes = require('./userRoutes');
+const pushRoutes = require('./pushRoutes');
 const appConfig = require('../config/appConfig');
 
 const router = express.Router();
@@ -17,5 +18,6 @@ router.use('/challenge', challengeRoutes);
 router.use('/entries', entryRoutes);
 router.use('/scores', scoreRoutes);
 router.use('/users', userRoutes);
+router.use('/push', pushRoutes);
 
 module.exports = router;

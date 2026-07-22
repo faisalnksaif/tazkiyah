@@ -58,6 +58,10 @@ npm run pm2:delete    # remove from PM2's process list
 | `JWT_SECRET` | Secret used to sign JWTs — use a long random string |
 | `JWT_EXPIRES_IN` | Token lifetime (default `30d`) |
 | `SEED_ADMIN_NAME/EMAIL/PASSWORD` | Only used once by `npm run seed` |
+| `WEB_PUSH_VAPID_PUBLIC_KEY` | Public VAPID key for browser push subscriptions |
+| `WEB_PUSH_VAPID_PRIVATE_KEY` | Private VAPID key used by backend to send push |
+| `WEB_PUSH_CONTACT_EMAIL` | Contact email used in VAPID details (`mailto:`) |
+| `PUSH_PRAYER_REMINDERS_ENABLED` | Set to `false` to disable prayer reminder scheduler |
 
 **Never commit real secrets.** `.env` is gitignored; `.env.example` should only ever contain placeholder values.
 
@@ -84,6 +88,9 @@ All routes are prefixed with `/api` and (except register/login) require `Authori
 | GET `/scores/leaderboard` | user | All users ranked by total score |
 | GET `/scores/me` / `/scores/user/:userId` | user | Day-wise score breakdown, own or another user's |
 | GET `/users` | user | List participants (for the community view) |
+| GET `/push/public-key` | user | Fetch VAPID public key for browser subscription |
+| POST `/push/subscriptions` | user | Save/update this device's web push subscription |
+| POST `/push/unsubscribe` | user | Disable this device's web push subscription |
 
 A Postman collection can be generated from this table, or import the routes directly — each route file under `backend/routes/` documents its own validation rules.
 
@@ -117,6 +124,49 @@ Then press `i` (iOS simulator), `a` (Android emulator), or scan the QR code with
 - **Screens** (`src/screens/`): Login/Register, Today's Checklist, My Progress, Community Progress, Leaderboard, and an Admin stack (Manage Activities, Challenge Settings, All Users' Scores).
 - **Navigation** (`src/navigation/`): `RootNavigator` switches Auth vs Main stack based on `AuthContext`; `MainNavigator` is a bottom-tab navigator that adds an Admin tab only for admin users.
 
+### Web + PWA build
+
+The web export is now PWA-enabled. During `npm run build:web`, the post-export script:
+
+- rewrites root-absolute Expo asset paths for GitHub Pages base path support,
+- generates `manifest.webmanifest`, `service-worker.js`, and install icons,
+- injects manifest + theme meta tags and service worker registration into `dist/index.html`,
+- includes push + notification-click handlers in the generated service worker,
+- writes `.nojekyll` to keep `_expo/` files published on GitHub Pages.
+
+### PWA prayer reminder pushes (phase 1)
+
+Current implementation sends browser push reminders **5 minutes before each mandatory prayer** (`fajr`, `dhuhr`, `asr`, `maghrib`, `isha`) using `backend/prayer-times.json`.
+
+Setup checklist:
+
+```bash
+cd backend
+npx web-push generate-vapid-keys
+# copy keys into backend/.env as WEB_PUSH_VAPID_PUBLIC_KEY and WEB_PUSH_VAPID_PRIVATE_KEY
+npm start
+```
+
+Notes:
+
+- The reminder scheduler runs in the backend process and checks once per minute.
+- Prayer day-bucketing follows IST (`UTC+05:30`) to match existing date logic.
+- Browser/device must grant notification permission and stay subscribed.
+
+Build and deploy:
+
+```bash
+cd frontend
+npm run build:web
+npm run deploy:web
+```
+
+After deploy, open your site over HTTPS, then:
+
+- in Chrome/Edge: look for the install button in the address bar,
+- in Safari (iOS): use Share -> Add to Home Screen,
+- test offline behavior by loading once, then switching network off and reloading.
+
 ---
 
 ## Seed data
@@ -128,6 +178,6 @@ Running `npm run seed` in `backend/` creates:
 
 ## Future work (v1 non-goals)
 
-- Push notifications (e.g. prayer-time or entry reminders)
+- Advanced notification controls (quiet hours, per-prayer toggles, personalized schedules)
 - Offline support / local sync queue
 - Social features beyond read-only community progress and the leaderboard

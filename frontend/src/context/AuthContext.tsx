@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '../types';
 import { authService } from '../services/AuthService';
 import { apiClient } from '../services/ApiClient';
+import { pushService } from '../services/PushService';
 
 interface AuthContextValue {
   user: User | null;
@@ -31,6 +32,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     })();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    pushService.registerWebPushSubscription().catch((err) => {
+      console.warn('Web push subscription setup failed:', err);
+    });
+  }, [user?.id]);
 
   const login = async (email: string, password: string) => {
     const { user: loggedInUser } = await authService.login(email, password);
