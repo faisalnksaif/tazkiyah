@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Activity, DailyEntry } from '../types';
 import { useTheme } from '../theme/ThemeProvider';
@@ -23,6 +23,18 @@ interface ActivityItemProps {
 export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox, onToggleSubItem }: ActivityItemProps) {
   const theme = useTheme();
   const [liveDragValue, setLiveDragValue] = useState<number | null>(null);
+  const total = sumIncrements(entry);
+
+  // Once a drag ends, keep showing the last dragged value (don't fall back
+  // to the pre-commit `total` prop) until the parent's async reload lands
+  // and `total` actually catches up — otherwise the meta text flickers back
+  // to the old number for the brief window before the new total arrives.
+  useEffect(() => {
+    if (liveDragValue !== null && total === liveDragValue) {
+      setLiveDragValue(null);
+    }
+  }, [total, liveDragValue]);
+
   const styles = StyleSheet.create({
     name: { fontSize: theme.fontSizes.md, fontWeight: theme.fontWeights.medium, color: theme.colors.text },
     meta: { fontSize: theme.fontSizes.xs, color: theme.colors.textMuted, marginTop: 2, marginBottom: theme.spacing.sm },
@@ -37,7 +49,6 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
   });
 
   if (activity.type === 'counter' || activity.type === 'duration') {
-    const total = sumIncrements(entry);
     const displayValue = liveDragValue ?? total;
     const formatValue = formatActivityValue(activity.type, activity.unit);
     const metaText =
@@ -53,7 +64,9 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
           total={total}
           targetValue={activity.targetValue}
           step={stepForActivity(activity.type, activity.targetValue)}
-          onDragValueChange={setLiveDragValue}
+          onDragValueChange={(v) => {
+            if (v !== null) setLiveDragValue(v);
+          }}
           onCommitDelta={(delta) => onAddIncrement(activity, delta)}
         />
       </Card>
@@ -74,10 +87,15 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
     );
   }
 
-  // checklist
-  const statuses = entry?.subItemStatuses?.length
-    ? entry.subItemStatuses
-    : (activity.subItems || []).map((si) => ({ label: si.label, done: false }));
+  // checklist — always render from the activity's current subItems (the
+  // source of truth for labels), looking up each one's done state from the
+  // stored entry by label. entry.subItemStatuses freezes labels as of
+  // whenever it was first created, so relying on it directly would keep
+  // showing a sub-item's old name forever after an admin renames it.
+  const statuses = (activity.subItems || []).map((si) => ({
+    label: si.label,
+    done: entry?.subItemStatuses?.find((s) => s.label === si.label)?.done ?? false,
+  }));
   const doneCount = statuses.filter((s) => s.done).length;
 
   return (
