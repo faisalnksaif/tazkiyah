@@ -14,6 +14,22 @@ export class ApiError extends Error {
 }
 
 /**
+ * Renders an error for display, including field-level validation details
+ * (e.g. { email: "email must be a valid email" }) rather than just the
+ * generic top-level message.
+ */
+export function formatApiError(err: unknown, fallback = 'Something went wrong'): string {
+  if (!(err instanceof ApiError)) return fallback;
+
+  if (err.details && typeof err.details === 'object') {
+    const fieldMessages = Object.values(err.details as Record<string, string>).filter(Boolean);
+    if (fieldMessages.length > 0) return fieldMessages.join('\n');
+  }
+
+  return err.message;
+}
+
+/**
  * Single reusable request wrapper used by every domain service below.
  * Centralizes base URL, auth header injection, JSON handling, and error shaping
  * so no screen or service duplicates fetch/error-parsing logic.

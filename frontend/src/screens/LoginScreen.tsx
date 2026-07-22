@@ -6,7 +6,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { appConfig } from '../config/appConfig';
 import { InputField } from '../components/InputField';
 import { Button } from '../components/Button';
-import { ApiError } from '../services/ApiClient';
+import { formatApiError } from '../services/ApiClient';
 
 export function LoginScreen() {
   const { login } = useAuth();
@@ -23,7 +23,7 @@ export function LoginScreen() {
     try {
       await login(email, password);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong');
+      setError(formatApiError(err));
     } finally {
       setLoading(false);
     }

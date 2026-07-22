@@ -15,12 +15,12 @@ export function InputField({ label, error, style, ...rest }: InputFieldProps) {
     input: {
       borderWidth: error ? 1 : 0,
       borderColor: theme.colors.danger,
-      borderRadius: theme.radii.sm,
+      borderRadius: theme.radii.pill,
       paddingVertical: theme.spacing.sm + 2,
-      paddingHorizontal: theme.spacing.md,
+      paddingHorizontal: theme.spacing.lg,
       fontSize: theme.fontSizes.md,
       color: theme.colors.text,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surface,
     },
     error: { color: theme.colors.danger, fontSize: theme.fontSizes.xs, marginTop: theme.spacing.xs },
   });

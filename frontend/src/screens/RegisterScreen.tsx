@@ -6,7 +6,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { appConfig } from '../config/appConfig';
 import { InputField } from '../components/InputField';
 import { Button } from '../components/Button';
-import { ApiError } from '../services/ApiClient';
+import { formatApiError } from '../services/ApiClient';
 
 export function RegisterScreen() {
   const { register } = useAuth();
@@ -24,7 +24,7 @@ export function RegisterScreen() {
     try {
       await register(name, email, password);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong');
+      setError(formatApiError(err));
     } finally {
       setLoading(false);
     }
