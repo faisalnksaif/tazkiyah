@@ -20,8 +20,14 @@ describe('getChallengeStatus', () => {
     expect(status.dayNumber).toBe(21);
   });
 
-  test('addDays and toDateKey round-trip correctly', () => {
+  test('addDays round-trips correctly across a month boundary', () => {
     expect(addDays('2026-01-30', 2)).toBe('2026-02-01');
-    expect(toDateKey(new Date('2026-01-01T23:59:59.000Z'))).toBe('2026-01-01');
+  });
+
+  test('toDateKey buckets by IST (UTC+5:30), not UTC', () => {
+    // 20:00 UTC on Jan 1st is 01:30 IST on Jan 2nd — should roll to the next day.
+    expect(toDateKey(new Date('2026-01-01T20:00:00.000Z'))).toBe('2026-01-02');
+    // 10:00 UTC on Jan 1st is 15:30 IST the same day — should stay on Jan 1st.
+    expect(toDateKey(new Date('2026-01-01T10:00:00.000Z'))).toBe('2026-01-01');
   });
 });

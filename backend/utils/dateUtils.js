@@ -1,17 +1,25 @@
 // Single source of truth for date bucketing/formatting logic shared across
 // services. All "day X of Y" and date-range calculations flow through here.
 
-/** Normalize a Date/string to a YYYY-MM-DD string (UTC-based day bucket). */
+// India does not observe DST, so a fixed offset is safe (no timezone
+// database / Intl dependency needed — matters on React Native's JS engine).
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+
+/** Normalize a Date/string to a YYYY-MM-DD string, using IST (UTC+5:30) as the day boundary. */
 function toDateKey(input = new Date()) {
-  const d = new Date(input);
-  return d.toISOString().slice(0, 10);
+  const shifted = new Date(new Date(input).getTime() + IST_OFFSET_MS);
+  return shifted.toISOString().slice(0, 10);
 }
 
-/** Add N days to a YYYY-MM-DD string, returning a YYYY-MM-DD string. */
+/**
+ * Add N days to a YYYY-MM-DD string, returning a YYYY-MM-DD string. Pure
+ * calendar-date arithmetic on the key itself — no timezone conversion here,
+ * so it doesn't compound with toDateKey's IST shift.
+ */
 function addDays(dateKey, days) {
   const d = new Date(`${dateKey}T00:00:00.000Z`);
   d.setUTCDate(d.getUTCDate() + days);
-  return toDateKey(d);
+  return d.toISOString().slice(0, 10);
 }
 
 /** Inclusive list of YYYY-MM-DD strings from start to end. */
