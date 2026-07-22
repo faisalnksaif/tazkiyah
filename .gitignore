@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.local
+
+# Expo
+frontend/.expo/
+frontend/dist/
+frontend/npm-debug.*
+frontend/*.jks
+frontend/*.p8
+frontend/*.p12
+frontend/*.key
+frontend/*.mobileprovision
+
+# OS
+.DS_Store

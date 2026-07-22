@@ -1,0 +1,60 @@
+// Single source of truth for date bucketing/formatting logic shared across
+// services. All "day X of Y" and date-range calculations flow through here.
+
+/** Normalize a Date/string to a YYYY-MM-DD string (UTC-based day bucket). */
+function toDateKey(input = new Date()) {
+  const d = new Date(input);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Add N days to a YYYY-MM-DD string, returning a YYYY-MM-DD string. */
+function addDays(dateKey, days) {
+  const d = new Date(`${dateKey}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return toDateKey(d);
+}
+
+/** Inclusive list of YYYY-MM-DD strings from start to end. */
+function dateRange(startKey, endKey) {
+  const dates = [];
+  let cursor = startKey;
+  while (cursor <= endKey) {
+    dates.push(cursor);
+    cursor = addDays(cursor, 1);
+  }
+  return dates;
+}
+
+/**
+ * Given a ChallengeConfig doc, compute the current day number (1-indexed),
+ * whether the challenge has ended, and the full list of challenge day keys.
+ * This is the ONLY place "day X of Y" should be derived.
+ */
+function getChallengeStatus(challengeConfig, now = new Date()) {
+  if (!challengeConfig) {
+    return { started: false, dayNumber: 0, totalDays: 0, isOver: false, days: [] };
+  }
+  const startKey = toDateKey(challengeConfig.startDate);
+  const endKey = addDays(startKey, challengeConfig.durationDays - 1);
+  const todayKey = toDateKey(now);
+
+  const startMs = new Date(`${startKey}T00:00:00.000Z`).getTime();
+  const todayMs = new Date(`${todayKey}T00:00:00.000Z`).getTime();
+  const diffDays = Math.floor((todayMs - startMs) / 86400000);
+
+  const started = diffDays >= 0;
+  const dayNumber = started ? Math.min(diffDays + 1, challengeConfig.durationDays) : 0;
+  const isOver = todayKey > endKey;
+
+  return {
+    started,
+    dayNumber,
+    totalDays: challengeConfig.durationDays,
+    isOver,
+    startDate: startKey,
+    endDate: endKey,
+    days: dateRange(startKey, endKey),
+  };
+}
+
+module.exports = { toDateKey, addDays, dateRange, getChallengeStatus };
