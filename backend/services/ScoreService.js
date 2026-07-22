@@ -76,11 +76,12 @@ class ScoreService {
   }
 
   async getLeaderboard() {
-    const scores = await DailyScore.find({}).populate('userId', 'name email');
+    const scores = await DailyScore.find({}).populate('userId', 'name email role');
     const totals = new Map();
 
     for (const s of scores) {
-      if (!s.userId) continue;
+      // Super admin isn't a participant — exclude them from the leaderboard.
+      if (!s.userId || s.userId.role === 'admin') continue;
       const key = s.userId._id.toString();
       const existing = totals.get(key) || { userId: key, name: s.userId.name, email: s.userId.email, totalScore: 0 };
       existing.totalScore += s.totalScore;
