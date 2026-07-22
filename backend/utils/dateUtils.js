@@ -1,14 +1,12 @@
 // Single source of truth for date bucketing/formatting logic shared across
 // services. All "day X of Y" and date-range calculations flow through here.
+const moment = require('moment');
 
-// India does not observe DST, so a fixed offset is safe (no timezone
-// database / Intl dependency needed — matters on React Native's JS engine).
-const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+const IST_OFFSET = '+05:30';
 
 /** Normalize a Date/string to a YYYY-MM-DD string, using IST (UTC+5:30) as the day boundary. */
 function toDateKey(input = new Date()) {
-  const shifted = new Date(new Date(input).getTime() + IST_OFFSET_MS);
-  return shifted.toISOString().slice(0, 10);
+  return moment(input).utcOffset(IST_OFFSET).format('YYYY-MM-DD');
 }
 
 /**
@@ -17,9 +15,7 @@ function toDateKey(input = new Date()) {
  * so it doesn't compound with toDateKey's IST shift.
  */
 function addDays(dateKey, days) {
-  const d = new Date(`${dateKey}T00:00:00.000Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
+  return moment(dateKey, 'YYYY-MM-DD').add(days, 'days').format('YYYY-MM-DD');
 }
 
 /** Inclusive list of YYYY-MM-DD strings from start to end. */
@@ -46,9 +42,7 @@ function getChallengeStatus(challengeConfig, now = new Date()) {
   const endKey = addDays(startKey, challengeConfig.durationDays - 1);
   const todayKey = toDateKey(now);
 
-  const startMs = new Date(`${startKey}T00:00:00.000Z`).getTime();
-  const todayMs = new Date(`${todayKey}T00:00:00.000Z`).getTime();
-  const diffDays = Math.floor((todayMs - startMs) / 86400000);
+  const diffDays = moment(todayKey, 'YYYY-MM-DD').diff(moment(startKey, 'YYYY-MM-DD'), 'days');
 
   const started = diffDays >= 0;
   const dayNumber = started ? Math.min(diffDays + 1, challengeConfig.durationDays) : 0;
