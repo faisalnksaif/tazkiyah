@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(authenticate());
 
 router.get('/public-key', pushController.getPublicKey);
+router.get('/subscriptions/me', pushController.mySubscriptions);
 
 router.post(
   '/subscriptions',

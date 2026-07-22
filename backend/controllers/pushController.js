@@ -1,5 +1,6 @@
 const asyncHandler = require('../utils/asyncHandler');
 const PushService = require('../services/PushService');
+const PushSubscription = require('../models/PushSubscription');
 
 const getPublicKey = asyncHandler(async (req, res) => {
   const publicKey = PushService.getPublicKey();
@@ -20,4 +21,12 @@ const unsubscribe = asyncHandler(async (req, res) => {
   res.json({ ok: true });
 });
 
-module.exports = { getPublicKey, subscribe, unsubscribe };
+const mySubscriptions = asyncHandler(async (req, res) => {
+  const rows = await PushSubscription.find({ userId: req.user.id })
+    .select('endpoint enabled lastSeenAt createdAt updatedAt')
+    .sort({ updatedAt: -1 });
+
+  res.json({ count: rows.length, subscriptions: rows });
+});
+
+module.exports = { getPublicKey, subscribe, unsubscribe, mySubscriptions };

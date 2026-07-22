@@ -1,6 +1,13 @@
 import { Platform } from 'react-native';
 import { apiClient } from './ApiClient';
 
+export interface PushSubscriptionStatus {
+  supported: boolean;
+  permission: NotificationPermission | 'unsupported';
+  subscribed: boolean;
+  reason?: string;
+}
+
 function isSupportedWebPushEnvironment() {
   if (Platform.OS !== 'web') return false;
   if (typeof window === 'undefined') return false;
@@ -20,18 +27,32 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 class PushService {
-  async registerWebPushSubscription(): Promise<void> {
-    if (!isSupportedWebPushEnvironment()) return;
-    if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
+  async registerWebPushSubscription(options: { requestPermission?: boolean } = {}): Promise<PushSubscriptionStatus> {
+    const requestPermission = !!options.requestPermission;
+    if (!isSupportedWebPushEnvironment()) {
+      return { supported: false, permission: 'unsupported', subscribed: false, reason: 'unsupported-environment' };
+    }
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      return { supported: true, permission: Notification.permission, subscribed: false, reason: 'https-required' };
+    }
 
     const { publicKey } = await apiClient.get<{ publicKey: string }>('/push/public-key');
-    if (!publicKey) return;
+    if (!publicKey) {
+      return { supported: true, permission: Notification.permission, subscribed: false, reason: 'missing-public-key' };
+    }
 
     let permission = Notification.permission;
-    if (permission === 'default') {
+    if (permission === 'default' && requestPermission) {
       permission = await Notification.requestPermission();
     }
-    if (permission !== 'granted') return;
+    if (permission !== 'granted') {
+      return {
+        supported: true,
+        permission,
+        subscribed: false,
+        reason: permission === 'default' ? 'permission-not-requested' : 'permission-denied',
+      };
+    }
 
     const registration = await navigator.serviceWorker.ready;
     let subscription = await registration.pushManager.getSubscription();
@@ -46,6 +67,12 @@ class PushService {
     await apiClient.post('/push/subscriptions', {
       subscription: subscription.toJSON ? subscription.toJSON() : subscription,
     });
+
+    return { supported: true, permission, subscribed: true };
+  }
+
+  async getMySubscriptions() {
+    return apiClient.get<{ count: number; subscriptions: Array<{ endpoint: string; enabled: boolean }> }>('/push/subscriptions/me');
   }
 }
 

@@ -7,6 +7,7 @@ const path = require('path');
 const zlib = require('zlib');
 
 const DIST_DIR = path.join(__dirname, '..', 'dist');
+const SOURCE_ICONS_DIR = path.join(__dirname, '..', 'public', 'icons');
 const BASE_PATH = normalizeBasePath(process.argv[2] || '/tazkiyah');
 const PWA_THEME_COLOR = '#000000';
 const PWA_BG_COLOR = '#f6f5ef';
@@ -120,9 +121,24 @@ function writePwaIcons() {
   ensureDir(iconsDir);
 
   const iconColor = { r: 20, g: 83, b: 45, a: 255 };
-  fs.writeFileSync(path.join(iconsDir, 'icon-192.png'), createSolidPng(192, iconColor));
-  fs.writeFileSync(path.join(iconsDir, 'icon-512.png'), createSolidPng(512, iconColor));
-  fs.writeFileSync(path.join(iconsDir, 'icon-180.png'), createSolidPng(180, iconColor));
+  const requiredIcons = [
+    { name: 'icon-192.png', size: 192 },
+    { name: 'icon-512.png', size: 512 },
+    { name: 'icon-180.png', size: 180 },
+  ];
+
+  for (const icon of requiredIcons) {
+    const sourcePath = path.join(SOURCE_ICONS_DIR, icon.name);
+    const targetPath = path.join(iconsDir, icon.name);
+
+    if (fs.existsSync(sourcePath)) {
+      fs.copyFileSync(sourcePath, targetPath);
+    } else {
+      // Keep builds resilient if a custom icon is missing.
+      fs.writeFileSync(targetPath, createSolidPng(icon.size, iconColor));
+      console.warn(`[pwa] Missing ${icon.name} in public/icons, generated fallback icon.`);
+    }
+  }
 }
 
 function writeManifest() {

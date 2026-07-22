@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) return;
 
-    pushService.registerWebPushSubscription().catch((err) => {
+    pushService.registerWebPushSubscription({ requestPermission: false }).catch((err) => {
       console.warn('Web push subscription setup failed:', err);
     });
   }, [user?.id]);
