@@ -22,7 +22,17 @@ export function formatHours(minutes: number): string {
   return `${rounded % 1 === 0 ? rounded : rounded.toFixed(1)} hrs`;
 }
 
-/** Value formatter for a counter/duration activity — hours for duration, raw unit otherwise. */
-export function formatActivityValue(type: ActivityType, unit: string): (value: number) => string {
-  return type === 'duration' ? formatHours : (value: number) => `${value} ${unit}`;
+/** "7 min" — for short-target duration activities (e.g. a 10-minute Reading slider) where hours would round to ~0. */
+export function formatMinutes(minutes: number): string {
+  return `${Math.round(minutes)} min`;
+}
+
+/**
+ * Value formatter for a counter/duration activity — raw unit for counters;
+ * for durations, minutes when the target is under an hour (hours would be
+ * unreadable, e.g. "0.2 hrs"), hours otherwise.
+ */
+export function formatActivityValue(type: ActivityType, unit: string, targetValue?: number): (value: number) => string {
+  if (type !== 'duration') return (value: number) => `${value} ${unit}`;
+  return (targetValue ?? 0) < 60 ? formatMinutes : formatHours;
 }

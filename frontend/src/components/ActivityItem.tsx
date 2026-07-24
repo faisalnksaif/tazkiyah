@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { Activity, DailyEntry } from '../types';
 import { useTheme } from '../theme/ThemeProvider';
 import { Card } from './Card';
@@ -7,6 +8,10 @@ import { ProgressBar } from './ProgressBar';
 import { ProgressSlider } from './ProgressSlider';
 import { Toggle } from './Toggle';
 import { formatActivityValue, stepForActivity } from '../utils/activityFormat';
+
+// Jama'ath (congregational prayer) earns a scoring bonus — see ScoreService —
+// and only makes sense for the prayer checklist, so it's gated by name here too.
+const PRAYER_ACTIVITY_NAME = '5 Daily Prayers';
 
 function sumIncrements(entry?: DailyEntry) {
   return (entry?.increments || []).reduce((sum, i) => sum + i.value, 0);
@@ -17,7 +22,7 @@ interface ActivityItemProps {
   entry?: DailyEntry;
   onAddIncrement: (activity: Activity, value: number) => void;
   onToggleCheckbox: (activity: Activity, done: boolean) => void;
-  onToggleSubItem: (activity: Activity, label: string, done: boolean) => void;
+  onToggleSubItem: (activity: Activity, label: string, done: boolean, jamaath: boolean) => void;
 }
 
 export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox, onToggleSubItem }: ActivityItemProps) {
@@ -46,11 +51,26 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
       paddingVertical: theme.spacing.xs,
       marginBottom: theme.spacing.sm,
     },
+    subItemControls: { flexDirection: 'row', alignItems: 'center' },
+    jamaathChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: 5,
+      borderRadius: theme.radii.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      marginRight: theme.spacing.sm,
+    },
+    jamaathChipActive: { backgroundColor: theme.colors.primarySoft, borderColor: theme.colors.primary },
+    jamaathChipDisabled: { opacity: 0.4 },
+    jamaathChipText: { fontSize: theme.fontSizes.xs, color: theme.colors.textMuted, marginLeft: 4 },
+    jamaathChipTextActive: { color: theme.colors.primary, fontWeight: theme.fontWeights.medium },
   });
 
   if (activity.type === 'counter' || activity.type === 'duration') {
     const displayValue = liveDragValue ?? total;
-    const formatValue = formatActivityValue(activity.type, activity.unit);
+    const formatValue = formatActivityValue(activity.type, activity.unit, activity.targetValue);
     const metaText =
       activity.type === 'duration'
         ? `${formatValue(displayValue)} / ${formatValue(activity.targetValue)}`
@@ -74,6 +94,7 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
   }
 
   if (activity.type === 'checkbox') {
+    const complete = !!entry?.done;
     return (
       <Card>
         <View style={styles.row}>
@@ -81,7 +102,7 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
             <Text style={styles.name}>{activity.name}</Text>
             {activity.description ? <Text style={styles.meta}>{activity.description}</Text> : null}
           </View>
-          <Toggle value={!!entry?.done} onValueChange={(v) => onToggleCheckbox(activity, v)} />
+          <Toggle value={complete} onValueChange={(v) => onToggleCheckbox(activity, v)} />
         </View>
       </Card>
     );
@@ -92,11 +113,12 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
   // stored entry by label. entry.subItemStatuses freezes labels as of
   // whenever it was first created, so relying on it directly would keep
   // showing a sub-item's old name forever after an admin renames it.
-  const statuses = (activity.subItems || []).map((si) => ({
-    label: si.label,
-    done: entry?.subItemStatuses?.find((s) => s.label === si.label)?.done ?? false,
-  }));
+  const statuses = (activity.subItems || []).map((si) => {
+    const status = entry?.subItemStatuses?.find((s) => s.label === si.label);
+    return { label: si.label, done: status?.done ?? false, jamaath: status?.jamaath ?? false };
+  });
   const doneCount = statuses.filter((s) => s.done).length;
+  const supportsJamaath = activity.name === PRAYER_ACTIVITY_NAME;
 
   return (
     <Card>
@@ -107,7 +129,21 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
       {statuses.map((s) => (
         <View key={s.label} style={styles.subItemRow}>
           <Text style={{ color: theme.colors.text }}>{s.label}</Text>
-          <Toggle value={s.done} onValueChange={(v) => onToggleSubItem(activity, s.label, v)} />
+          <View style={styles.subItemControls}>
+            {supportsJamaath ? (
+              <Pressable
+                onPress={() => onToggleSubItem(activity, s.label, true, !s.jamaath)}
+                disabled={!s.done}
+                style={[styles.jamaathChip, s.jamaath && styles.jamaathChipActive, !s.done && styles.jamaathChipDisabled]}
+                accessibilityRole="button"
+                accessibilityState={{ checked: s.jamaath, disabled: !s.done }}
+              >
+                <Feather name="users" size={12} color={s.jamaath ? theme.colors.primary : theme.colors.textMuted} />
+                <Text style={[styles.jamaathChipText, s.jamaath && styles.jamaathChipTextActive]}>جماعة</Text>
+              </Pressable>
+            ) : null}
+            <Toggle value={s.done} onValueChange={(v) => onToggleSubItem(activity, s.label, v, v && s.jamaath)} />
+          </View>
         </View>
       ))}
       <ProgressBar ratio={statuses.length ? doneCount / statuses.length : 0} />

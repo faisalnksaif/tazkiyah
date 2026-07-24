@@ -15,3 +15,8 @@ export function formatDisplayDate(dateKey: string): string {
 export function monthKey(dateKey: string): string {
   return dateKey.slice(0, 7); // YYYY-MM
 }
+
+/** Current moment shifted to IST, for time-of-day comparisons (e.g. prayer countdowns). */
+export function nowIst(): moment.Moment {
+  return moment().utcOffset(IST_OFFSET);
+}

@@ -56,3 +56,29 @@ describe('ScoreService.computePointsEarned', () => {
     expect(ScoreService.computePointsEarned(activity, 0)).toBe(0);
   });
 });
+
+describe('ScoreService.computeJamaathBonus', () => {
+  test('awards 2 flat points per jama\'ath prayer, only on the 5 Daily Prayers activity', () => {
+    const prayerActivity = { type: 'checklist', name: '5 Daily Prayers' };
+    const entry = {
+      subItemStatuses: [
+        { label: 'Fajr', done: true, jamaath: true },
+        { label: 'Dhuhr', done: true, jamaath: false },
+        { label: 'Asr', done: false, jamaath: true }, // not done -> shouldn't count
+        { label: 'Maghrib', done: false, jamaath: false },
+        { label: 'Isha', done: false, jamaath: false },
+      ],
+    };
+    expect(ScoreService.computeJamaathBonus(prayerActivity, entry)).toBe(2);
+
+    const allJamaath = {
+      subItemStatuses: entry.subItemStatuses.map((s) => ({ ...s, done: true, jamaath: true })),
+    };
+    expect(ScoreService.computeJamaathBonus(prayerActivity, allJamaath)).toBe(10);
+
+    const otherChecklist = { type: 'checklist', name: 'Some Other Checklist' };
+    expect(ScoreService.computeJamaathBonus(otherChecklist, allJamaath)).toBe(0);
+
+    expect(ScoreService.computeJamaathBonus(prayerActivity, null)).toBe(0);
+  });
+});

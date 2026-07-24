@@ -8,5 +8,4 @@ export const appConfig = {
   defaultChallengeDurationDays: 21,
   apiBaseUrl: 'https://api.sulthanpages.com/tazkiyah/api',
 };
-
 export type AppConfig = typeof appConfig;

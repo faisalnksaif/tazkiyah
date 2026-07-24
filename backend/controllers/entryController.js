@@ -29,9 +29,9 @@ const setCheckbox = asyncHandler(async (req, res) => {
 });
 
 const setChecklistItem = asyncHandler(async (req, res) => {
-  const { activityId, subItemLabel, done, date } = req.body;
+  const { activityId, subItemLabel, done, jamaath, date } = req.body;
   if (!subItemLabel) throw ApiError.badRequest('subItemLabel is required');
-  const entry = await EntryService.setChecklistItem(req.user.id, activityId, subItemLabel, done, date);
+  const entry = await EntryService.setChecklistItem(req.user.id, activityId, subItemLabel, done, jamaath, date);
   res.json(entry);
 });
 

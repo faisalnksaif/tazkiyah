@@ -8,7 +8,13 @@ const incrementSchema = new mongoose.Schema(
 );
 
 const subItemStatusSchema = new mongoose.Schema(
-  { label: { type: String, required: true }, done: { type: Boolean, default: false } },
+  {
+    label: { type: String, required: true },
+    done: { type: Boolean, default: false },
+    // Prayed in congregation — only meaningful when done is true (see
+    // ScoreService's jama'ath bonus for the 5 Daily Prayers checklist).
+    jamaath: { type: Boolean, default: false },
+  },
   { _id: false }
 );
 

@@ -2,6 +2,14 @@ const DailyEntry = require('../models/DailyEntry');
 const DailyScore = require('../models/DailyScore');
 const Activity = require('../models/Activity');
 
+// Praying in congregation is rewarded on the 5 Daily Prayers checklist only —
+// identified by name since jama'ath is specific to prayer, not a generic
+// checklist feature. Flat bonus (not ratio-scaled) so it adds cleanly on top
+// of the day's total: 5 prayers x 2 points = 10, which combined with the
+// current activity weights (summing to 90) caps a perfect day at 100.
+const PRAYER_ACTIVITY_NAME = '5 Daily Prayers';
+const JAMAATH_BONUS_POINTS = 2;
+
 class ScoreService {
   /**
    * Pure function: completion ratio in [0, 1] for one activity's entry on one day.
@@ -42,6 +50,14 @@ class ScoreService {
     return completionRatio * activity.pointsWeight;
   }
 
+  /** Flat bonus points for prayers completed in jama'ath — only on the 5 Daily Prayers checklist. */
+  computeJamaathBonus(activity, entry) {
+    if (!entry || activity.name !== PRAYER_ACTIVITY_NAME) return 0;
+    const items = entry.subItemStatuses || [];
+    const jamaathCount = items.filter((i) => i.done && i.jamaath).length;
+    return jamaathCount * JAMAATH_BONUS_POINTS;
+  }
+
   /** Recompute and persist a user's DailyScore for one date, based on current entries + activities. */
   async recomputeDailyScore(userId, date) {
     const [entries, activities] = await Promise.all([
@@ -57,7 +73,7 @@ class ScoreService {
     for (const activity of activities) {
       const entry = entriesByActivity.get(activity._id.toString());
       const completionRatio = this.computeCompletionRatio(activity, entry);
-      const pointsEarned = this.computePointsEarned(activity, completionRatio);
+      const pointsEarned = this.computePointsEarned(activity, completionRatio) + this.computeJamaathBonus(activity, entry);
       totalScore += pointsEarned;
       breakdown.push({ activityId: activity._id, pointsEarned, completionRatio });
     }
@@ -97,3 +113,4 @@ class ScoreService {
 }
 
 module.exports = new ScoreService();
+module.exports.constants = { PRAYER_ACTIVITY_NAME, JAMAATH_BONUS_POINTS };

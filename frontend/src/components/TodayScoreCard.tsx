@@ -23,7 +23,7 @@ export function TodayScoreCard({ score, maxScore }: TodayScoreCardProps) {
     <View style={styles.container}>
       <CircularProgress ratio={ratio} size={208} strokeWidth={14}>
         <AnimatedNumber value={score} style={styles.scoreNumber} decimals={0} />
-        {maxScore > 0 ? <Text style={styles.maxScore}>of {maxScore.toFixed(0)} possible</Text> : null}
+        {maxScore > 0 ? <Text style={styles.maxScore}>of {maxScore.toFixed(0)}</Text> : null}
       </CircularProgress>
     </View>
   );

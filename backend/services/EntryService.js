@@ -46,8 +46,12 @@ class EntryService {
     return entry;
   }
 
-  /** Toggle one sub-item (e.g. one of the 5 prayers) for a checklist activity on a given day. */
-  async setChecklistItem(userId, activityId, subItemLabel, done, date = toDateKey()) {
+  /**
+   * Toggle one sub-item (e.g. one of the 5 prayers) for a checklist activity on a given day.
+   * `jamaath` (prayed in congregation) can only be true alongside done — turning done off
+   * always clears it, since you can't have prayed in congregation without praying at all.
+   */
+  async setChecklistItem(userId, activityId, subItemLabel, done, jamaath = false, date = toDateKey()) {
     const activity = await Activity.findById(activityId);
     if (!activity) throw ApiError.notFound('Activity not found');
     if (activity.type !== 'checklist') throw ApiError.badRequest('setChecklistItem only applies to checklist activities');
@@ -61,13 +65,19 @@ class EntryService {
         userId,
         activityId,
         date,
-        subItemStatuses: activity.subItems.map((si) => ({ label: si.label, done: false })),
+        subItemStatuses: activity.subItems.map((si) => ({ label: si.label, done: false, jamaath: false })),
       });
     }
 
+    const isDone = !!done;
+    const isJamaath = isDone && !!jamaath;
     const target = entry.subItemStatuses.find((si) => si.label === subItemLabel);
-    if (target) target.done = !!done;
-    else entry.subItemStatuses.push({ label: subItemLabel, done: !!done });
+    if (target) {
+      target.done = isDone;
+      target.jamaath = isJamaath;
+    } else {
+      entry.subItemStatuses.push({ label: subItemLabel, done: isDone, jamaath: isJamaath });
+    }
 
     await entry.save();
     await ScoreService.recomputeDailyScore(userId, date);

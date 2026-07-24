@@ -1,14 +1,16 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { Animated, RefreshControl, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Activity, ChallengeStatus, DailyEntry } from '../types';
+import { Activity, ChallengeStatus, DailyEntry, PrayerTimes } from '../types';
 import { activityService } from '../services/ActivityService';
 import { entryService } from '../services/EntryService';
 import { challengeService } from '../services/ChallengeService';
 import { scoreService } from '../services/ScoreService';
+import { prayerTimesService } from '../services/PrayerTimesService';
 import { Header } from '../components/Header';
 import { ActivityItem } from '../components/ActivityItem';
 import { TodayScoreCard } from '../components/TodayScoreCard';
+import { PrayerTimesCard } from '../components/PrayerTimesCard';
 import { CompactScoreBadge } from '../components/CompactScoreBadge';
 import { ConfettiBurst } from '../components/ConfettiBurst';
 import { appConfig } from '../config/appConfig';
@@ -29,6 +31,7 @@ export function TodayChecklistScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [entries, setEntries] = useState<DailyEntry[]>([]);
   const [status, setStatus] = useState<ChallengeStatus | null>(null);
+  const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
   const [todayScore, setTodayScore] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [confettiTrigger, setConfettiTrigger] = useState(0);
@@ -36,15 +39,17 @@ export function TodayChecklistScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const load = useCallback(async () => {
-    const [activityList, entryList, challengeStatus, myScores] = await Promise.all([
+    const [activityList, entryList, challengeStatus, myScores, todayPrayerTimes] = await Promise.all([
       activityService.list(),
       entryService.getToday(),
       challengeService.getStatus(),
       scoreService.myDailyBreakdown(),
+      prayerTimesService.getToday(),
     ]);
     setActivities(activityList);
     setEntries(entryList);
     setStatus(challengeStatus);
+    setPrayerTimes(todayPrayerTimes);
 
     const today = myScores.find((s) => s.date === toDateKey());
     setTodayScore(today?.totalScore ?? 0);
@@ -84,9 +89,10 @@ export function TodayChecklistScreen() {
     await load();
   };
 
-  const handleToggleSubItem = async (activity: Activity, label: string, done: boolean) => {
-    await entryService.setChecklistItem(activity._id, label, done);
-    if (done) showToast(`${label} completed`);
+  const handleToggleSubItem = async (activity: Activity, label: string, done: boolean, jamaath: boolean) => {
+    await entryService.setChecklistItem(activity._id, label, done, jamaath);
+    if (jamaath) showToast(`${label} completed in jama'ath`);
+    else if (done) showToast(`${label} completed`);
     await load();
   };
 
@@ -133,6 +139,7 @@ export function TodayChecklistScreen() {
         ListHeaderComponent={
           <View style={styles.scoreHeader}>
             <TodayScoreCard score={todayScore} maxScore={maxPossibleScore} />
+            <PrayerTimesCard prayerTimes={prayerTimes} />
           </View>
         }
         renderItem={({ item }) => (

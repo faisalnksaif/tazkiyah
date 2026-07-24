@@ -36,6 +36,7 @@ export interface Increment {
 export interface SubItemStatus {
   label: string;
   done: boolean;
+  jamaath: boolean;
 }
 
 export interface DailyEntry {
@@ -77,6 +78,14 @@ export interface DailyScore {
   date: string;
   totalScore: number;
   breakdown: ScoreBreakdownItem[];
+}
+
+export type PrayerName = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+
+export interface PrayerTimes {
+  date: string;
+  prayers: Partial<Record<PrayerName, string>>;
+  tomorrowFajr?: string;
 }
 
 export interface LeaderboardEntry {

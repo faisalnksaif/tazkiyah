@@ -6,6 +6,7 @@ const entryRoutes = require('./entryRoutes');
 const scoreRoutes = require('./scoreRoutes');
 const userRoutes = require('./userRoutes');
 const pushRoutes = require('./pushRoutes');
+const prayerTimesRoutes = require('./prayerTimesRoutes');
 const appConfig = require('../config/appConfig');
 
 const router = express.Router();
@@ -19,5 +20,6 @@ router.use('/entries', entryRoutes);
 router.use('/scores', scoreRoutes);
 router.use('/users', userRoutes);
 router.use('/push', pushRoutes);
+router.use('/prayer-times', prayerTimesRoutes);
 
 module.exports = router;

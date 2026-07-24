@@ -24,8 +24,8 @@ class EntryService {
     return apiClient.post<DailyEntry>('/entries/checkbox', { activityId, done, date });
   }
 
-  setChecklistItem(activityId: string, subItemLabel: string, done: boolean, date?: string): Promise<DailyEntry> {
-    return apiClient.post<DailyEntry>('/entries/checklist-item', { activityId, subItemLabel, done, date });
+  setChecklistItem(activityId: string, subItemLabel: string, done: boolean, jamaath?: boolean, date?: string): Promise<DailyEntry> {
+    return apiClient.post<DailyEntry>('/entries/checklist-item', { activityId, subItemLabel, done, jamaath, date });
   }
 }
 

@@ -20,7 +20,8 @@ const DEFAULT_ACTIVITIES = [
     order: 4,
     subItems: [{ label: 'Fajr' }, { label: 'Dhuhr' }, { label: 'Asr' }, { label: 'Maghrib' }, { label: 'Isha' }],
   },
-  { name: 'Walk', description: 'Daily walking distance', type: 'counter', targetValue: 2, unit: 'km', pointsWeight: 15, order: 5 },
+  { name: 'Exercise', description: 'Daily exercise', type: 'checkbox', targetValue: 1, unit: '', pointsWeight: 2.5, order: 5 },
+  { name: 'Reading', description: 'Daily reading', type: 'duration', targetValue: 10, unit: 'minutes', pointsWeight: 2.5, order: 6 },
 ];
 
 async function seed() {
