@@ -94,4 +94,10 @@ export interface LeaderboardEntry {
   email: string;
   totalScore: number;
   todayScore: number;
+  sparkline: number[];
+}
+
+export interface LeaderboardTrend {
+  days: string[];
+  points: number[];
 }

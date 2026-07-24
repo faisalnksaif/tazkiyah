@@ -1,7 +1,8 @@
 const DailyEntry = require('../models/DailyEntry');
 const DailyScore = require('../models/DailyScore');
 const Activity = require('../models/Activity');
-const { toDateKey } = require('../utils/dateUtils');
+const ChallengeService = require('./ChallengeService');
+const { toDateKey, addDays } = require('../utils/dateUtils');
 
 // Praying in congregation is rewarded on the 5 Daily Prayers checklist only —
 // identified by name since jama'ath is specific to prayer, not a generic
@@ -95,6 +96,9 @@ class ScoreService {
   async getLeaderboard() {
     const scores = await DailyScore.find({}).populate('userId', 'name email role');
     const todayKey = toDateKey();
+    // Oldest -> newest, for the per-row sparkline (last 7 days, today included).
+    const last7Days = Array.from({ length: 7 }, (_, i) => addDays(todayKey, i - 6));
+    const dayIndex = new Map(last7Days.map((d, i) => [d, i]));
     const totals = new Map();
 
     for (const s of scores) {
@@ -102,9 +106,12 @@ class ScoreService {
       if (!s.userId || s.userId.role === 'admin') continue;
       const key = s.userId._id.toString();
       const existing =
-        totals.get(key) || { userId: key, name: s.userId.name, email: s.userId.email, totalScore: 0, todayScore: 0 };
+        totals.get(key) ||
+        { userId: key, name: s.userId.name, email: s.userId.email, totalScore: 0, todayScore: 0, sparkline: new Array(7).fill(0) };
       existing.totalScore += s.totalScore;
       if (s.date === todayKey) existing.todayScore += s.totalScore;
+      const idx = dayIndex.get(s.date);
+      if (idx !== undefined) existing.sparkline[idx] += s.totalScore;
       totals.set(key, existing);
     }
 
@@ -113,6 +120,33 @@ class ScoreService {
 
   async getUserDailyBreakdown(userId) {
     return DailyScore.find({ userId }).sort({ date: 1 }).populate('breakdown.activityId', 'name unit type');
+  }
+
+  /**
+   * Cumulative combined score across every participant (admins excluded), per
+   * day, across every challenge day up to today. Powers the leaderboard trend
+   * chart — group momentum, not an individual comparison.
+   */
+  async getLeaderboardTrend() {
+    const status = await ChallengeService.getStatus();
+    const todayKey = toDateKey();
+    const days = status.started ? status.days.filter((d) => d <= todayKey) : [];
+    if (days.length === 0) return { days: [], points: [] };
+
+    const scores = await DailyScore.find({ date: { $in: days } }).populate('userId', 'role');
+    const totalByDay = new Map(days.map((d) => [d, 0]));
+    for (const s of scores) {
+      if (!s.userId || s.userId.role === 'admin') continue;
+      totalByDay.set(s.date, (totalByDay.get(s.date) || 0) + s.totalScore);
+    }
+
+    let cumulative = 0;
+    const points = days.map((d) => {
+      cumulative += totalByDay.get(d) || 0;
+      return Math.round(cumulative * 100) / 100;
+    });
+
+    return { days, points };
   }
 }
 

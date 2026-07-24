@@ -61,33 +61,6 @@ function PulseDot({ color }: { color: string }) {
   return <Animated.View style={[styles.pulseDot, { backgroundColor: color, opacity }]} />;
 }
 
-// The upcoming prayer's icon gets a subtle breathing scale — everything
-// else in the row stays still, so the eye is drawn straight to what's next.
-function PrayerIcon({ name, active, color }: { name: PrayerName; active: boolean; color: string }) {
-  const scale = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    if (!active) {
-      scale.setValue(1);
-      return;
-    }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scale, { toValue: 1.2, duration: 900, useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1, duration: 900, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [active, scale]);
-
-  return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <Feather name={PRAYER_ICONS[name]} size={16} color={color} />
-    </Animated.View>
-  );
-}
-
 const styles = StyleSheet.create({
   pulseDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
 });
@@ -154,11 +127,11 @@ export function PrayerTimesCard({ prayerTimes }: PrayerTimesCardProps) {
     progressFill: { height: 4, borderRadius: 2, backgroundColor: theme.colors.primary },
     row: { flexDirection: 'row', justifyContent: 'space-between' },
     item: { flex: 1, alignItems: 'center', paddingVertical: theme.spacing.xs, borderRadius: theme.radii.sm },
-    itemActive: { backgroundColor: theme.colors.surface },
     itemLabel: { fontSize: theme.fontSizes.xs, color: theme.colors.primaryDark, marginTop: 4 },
     itemLabelActive: { color: theme.colors.primary, fontWeight: theme.fontWeights.medium },
     itemTime: { fontSize: theme.fontSizes.xs, color: theme.colors.text, marginTop: 2 },
     itemTimeActive: { color: theme.colors.primary, fontWeight: theme.fontWeights.medium },
+    activeDot: { width: 4, height: 4, borderRadius: 2, marginTop: 3 },
   });
 
   return (
@@ -181,10 +154,11 @@ export function PrayerTimesCard({ prayerTimes }: PrayerTimesCardProps) {
         {entries.map((entry) => {
           const active = upcoming?.name === entry.name;
           return (
-            <View key={entry.name} style={[dynamicStyles.item, active && dynamicStyles.itemActive]}>
-              <PrayerIcon name={entry.name} active={active} color={active ? theme.colors.primary : theme.colors.primaryDark} />
+            <View key={entry.name} style={dynamicStyles.item}>
+              <Feather name={PRAYER_ICONS[entry.name]} size={16} color={active ? theme.colors.primary : theme.colors.primaryDark} />
               <Text style={[dynamicStyles.itemLabel, active && dynamicStyles.itemLabelActive]}>{PRAYER_LABELS[entry.name]}</Text>
               <Text style={[dynamicStyles.itemTime, active && dynamicStyles.itemTimeActive]}>{formatClock(prayerTimes.prayers[entry.name]!)}</Text>
+              <View style={[dynamicStyles.activeDot, { backgroundColor: active ? theme.colors.primary : 'transparent' }]} />
             </View>
           );
         })}

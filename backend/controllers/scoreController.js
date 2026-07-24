@@ -16,4 +16,9 @@ const userDailyBreakdown = asyncHandler(async (req, res) => {
   res.json(breakdown);
 });
 
-module.exports = { leaderboard, myDailyBreakdown, userDailyBreakdown };
+const trend = asyncHandler(async (req, res) => {
+  const data = await ScoreService.getLeaderboardTrend();
+  res.json(data);
+});
+
+module.exports = { leaderboard, myDailyBreakdown, userDailyBreakdown, trend };

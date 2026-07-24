@@ -6,6 +6,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { Card } from './Card';
 import { Avatar } from './Avatar';
 import { AnimatedNumber } from './AnimatedNumber';
+import { Sparkline } from './Sparkline';
 
 interface LeaderboardRowProps {
   entry: LeaderboardEntry;
@@ -77,9 +78,12 @@ export function LeaderboardRow({ entry, rank, isMe, previousScore, onPress }: Le
               <Text style={styles.rank}>{rank}</Text>
               <Avatar name={entry.name} size={44} />
               <View style={styles.nameBlock}>
-                <Text style={styles.name}>{entry.name}</Text>
+                <Text style={styles.name} numberOfLines={1}>
+                  {entry.name}
+                </Text>
                 {isMe ? <Text style={styles.youBadge}>You</Text> : null}
               </View>
+              <Sparkline points={entry.sparkline} />
               <View style={styles.scoreBlock}>
                 <AnimatedNumber value={entry.totalScore} style={styles.score} />
                 <Text style={styles.todayScore}>+{entry.todayScore.toFixed(0)} today</Text>

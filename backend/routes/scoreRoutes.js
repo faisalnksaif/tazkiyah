@@ -7,6 +7,7 @@ const router = express.Router();
 router.use(authenticate());
 
 router.get('/leaderboard', scoreController.leaderboard);
+router.get('/trend', scoreController.trend);
 router.get('/me', scoreController.myDailyBreakdown);
 router.get('/user/:userId', scoreController.userDailyBreakdown); // community read-only view
 
