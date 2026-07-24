@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Feather } from '@expo/vector-icons';
 import { TodayChecklistScreen } from '../screens/TodayChecklistScreen';
 import { MyProgressScreen } from '../screens/MyProgressScreen';
-import { LeaderboardScreen } from '../screens/LeaderboardScreen';
+import { LeaderboardNavigator } from './LeaderboardNavigator';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { AdminNavigator } from './AdminNavigator';
 import { useAuth } from '../context/AuthContext';
@@ -46,7 +46,7 @@ export function MainNavigator() {
     >
       <Tab.Screen name="Today" component={TodayChecklistScreen} />
       <Tab.Screen name="MyProgress" component={MyProgressScreen} options={{ title: 'My Progress' }} />
-      <Tab.Screen name="Leaderboard" component={LeaderboardScreen} />
+      <Tab.Screen name="Leaderboard" component={LeaderboardNavigator} />
       {user?.role === 'admin' ? <Tab.Screen name="Admin" component={AdminNavigator} /> : null}
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>

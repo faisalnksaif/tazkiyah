@@ -1,6 +1,7 @@
 const DailyEntry = require('../models/DailyEntry');
 const DailyScore = require('../models/DailyScore');
 const Activity = require('../models/Activity');
+const { toDateKey } = require('../utils/dateUtils');
 
 // Praying in congregation is rewarded on the 5 Daily Prayers checklist only —
 // identified by name since jama'ath is specific to prayer, not a generic
@@ -93,14 +94,17 @@ class ScoreService {
 
   async getLeaderboard() {
     const scores = await DailyScore.find({}).populate('userId', 'name email role');
+    const todayKey = toDateKey();
     const totals = new Map();
 
     for (const s of scores) {
       // Super admin isn't a participant — exclude them from the leaderboard.
       if (!s.userId || s.userId.role === 'admin') continue;
       const key = s.userId._id.toString();
-      const existing = totals.get(key) || { userId: key, name: s.userId.name, email: s.userId.email, totalScore: 0 };
+      const existing =
+        totals.get(key) || { userId: key, name: s.userId.name, email: s.userId.email, totalScore: 0, todayScore: 0 };
       existing.totalScore += s.totalScore;
+      if (s.date === todayKey) existing.todayScore += s.totalScore;
       totals.set(key, existing);
     }
 

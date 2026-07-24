@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { LeaderboardEntry } from '../types';
 import { useTheme } from '../theme/ThemeProvider';
 import { Card } from './Card';
@@ -11,9 +12,10 @@ interface LeaderboardRowProps {
   rank: number;
   isMe: boolean;
   previousScore?: number;
+  onPress?: () => void;
 }
 
-export function LeaderboardRow({ entry, rank, isMe, previousScore }: LeaderboardRowProps) {
+export function LeaderboardRow({ entry, rank, isMe, previousScore, onPress }: LeaderboardRowProps) {
   const theme = useTheme();
   const entrance = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(0)).current;
@@ -46,7 +48,9 @@ export function LeaderboardRow({ entry, rank, isMe, previousScore }: Leaderboard
     nameBlock: { flex: 1 },
     name: { fontSize: theme.fontSizes.md, fontWeight: theme.fontWeights.bold, color: theme.colors.text },
     youBadge: { fontSize: theme.fontSizes.xs, fontWeight: theme.fontWeights.medium, color: theme.colors.primary, marginTop: 1 },
+    scoreBlock: { alignItems: 'flex-end' },
     score: { fontSize: theme.fontSizes.lg, fontWeight: theme.fontWeights.bold, color: theme.colors.primary },
+    todayScore: { fontSize: theme.fontSizes.xs, color: theme.colors.textMuted, marginTop: 1 },
     card: { marginBottom: 0 },
     me: { backgroundColor: theme.colors.primarySoft, borderWidth: 1, borderColor: theme.colors.primary },
   });
@@ -67,17 +71,23 @@ export function LeaderboardRow({ entry, rank, isMe, previousScore }: Leaderboard
       ]}
     >
       <Animated.View style={{ backgroundColor: pulseBackground, borderRadius: theme.radii.md }}>
-        <Card style={isMe ? { ...styles.card, ...styles.me } : styles.card}>
-          <View style={styles.row}>
-            <Text style={styles.rank}>{rank}</Text>
-            <Avatar name={entry.name} size={44} />
-            <View style={styles.nameBlock}>
-              <Text style={styles.name}>{entry.name}</Text>
-              {isMe ? <Text style={styles.youBadge}>You</Text> : null}
+        <Pressable onPress={onPress} disabled={!onPress}>
+          <Card style={isMe ? { ...styles.card, ...styles.me } : styles.card}>
+            <View style={styles.row}>
+              <Text style={styles.rank}>{rank}</Text>
+              <Avatar name={entry.name} size={44} />
+              <View style={styles.nameBlock}>
+                <Text style={styles.name}>{entry.name}</Text>
+                {isMe ? <Text style={styles.youBadge}>You</Text> : null}
+              </View>
+              <View style={styles.scoreBlock}>
+                <AnimatedNumber value={entry.totalScore} style={styles.score} />
+                <Text style={styles.todayScore}>+{entry.todayScore.toFixed(0)} today</Text>
+              </View>
+              {onPress ? <Feather name="chevron-right" size={18} color={theme.colors.textMuted} /> : null}
             </View>
-            <AnimatedNumber value={entry.totalScore} style={styles.score} />
-          </View>
-        </Card>
+          </Card>
+        </Pressable>
       </Animated.View>
     </Animated.View>
   );

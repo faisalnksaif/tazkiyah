@@ -20,12 +20,14 @@ function sumIncrements(entry?: DailyEntry) {
 interface ActivityItemProps {
   activity: Activity;
   entry?: DailyEntry;
-  onAddIncrement: (activity: Activity, value: number) => void;
-  onToggleCheckbox: (activity: Activity, done: boolean) => void;
-  onToggleSubItem: (activity: Activity, label: string, done: boolean, jamaath: boolean) => void;
+  onAddIncrement?: (activity: Activity, value: number) => void;
+  onToggleCheckbox?: (activity: Activity, done: boolean) => void;
+  onToggleSubItem?: (activity: Activity, label: string, done: boolean, jamaath: boolean) => void;
+  // Viewing another member's day — same layout, but nothing is tappable/draggable.
+  readOnly?: boolean;
 }
 
-export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox, onToggleSubItem }: ActivityItemProps) {
+export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox, onToggleSubItem, readOnly }: ActivityItemProps) {
   const theme = useTheme();
   const [liveDragValue, setLiveDragValue] = useState<number | null>(null);
   const total = sumIncrements(entry);
@@ -80,15 +82,19 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
       <Card>
         <Text style={styles.name}>{activity.name}</Text>
         <Text style={styles.meta}>{metaText}</Text>
-        <ProgressSlider
-          total={total}
-          targetValue={activity.targetValue}
-          step={stepForActivity(activity.type, activity.targetValue)}
-          onDragValueChange={(v) => {
-            if (v !== null) setLiveDragValue(v);
-          }}
-          onCommitDelta={(delta) => onAddIncrement(activity, delta)}
-        />
+        {readOnly ? (
+          <ProgressBar ratio={activity.targetValue ? total / activity.targetValue : 0} />
+        ) : (
+          <ProgressSlider
+            total={total}
+            targetValue={activity.targetValue}
+            step={stepForActivity(activity.type, activity.targetValue)}
+            onDragValueChange={(v) => {
+              if (v !== null) setLiveDragValue(v);
+            }}
+            onCommitDelta={(delta) => onAddIncrement?.(activity, delta)}
+          />
+        )}
       </Card>
     );
   }
@@ -102,7 +108,7 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
             <Text style={styles.name}>{activity.name}</Text>
             {activity.description ? <Text style={styles.meta}>{activity.description}</Text> : null}
           </View>
-          <Toggle value={complete} onValueChange={(v) => onToggleCheckbox(activity, v)} />
+          <Toggle value={complete} onValueChange={(v) => onToggleCheckbox?.(activity, v)} disabled={readOnly} />
         </View>
       </Card>
     );
@@ -132,17 +138,21 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
           <View style={styles.subItemControls}>
             {supportsJamaath ? (
               <Pressable
-                onPress={() => onToggleSubItem(activity, s.label, true, !s.jamaath)}
-                disabled={!s.done}
+                onPress={() => onToggleSubItem?.(activity, s.label, true, !s.jamaath)}
+                disabled={readOnly || !s.done}
                 style={[styles.jamaathChip, s.jamaath && styles.jamaathChipActive, !s.done && styles.jamaathChipDisabled]}
                 accessibilityRole="button"
-                accessibilityState={{ checked: s.jamaath, disabled: !s.done }}
+                accessibilityState={{ checked: s.jamaath, disabled: readOnly || !s.done }}
               >
                 <Feather name="users" size={12} color={s.jamaath ? theme.colors.primary : theme.colors.textMuted} />
                 <Text style={[styles.jamaathChipText, s.jamaath && styles.jamaathChipTextActive]}>جماعة</Text>
               </Pressable>
             ) : null}
-            <Toggle value={s.done} onValueChange={(v) => onToggleSubItem(activity, s.label, v, v && s.jamaath)} />
+            <Toggle
+              value={s.done}
+              onValueChange={(v) => onToggleSubItem?.(activity, s.label, v, v && s.jamaath)}
+              disabled={readOnly}
+            />
           </View>
         </View>
       ))}

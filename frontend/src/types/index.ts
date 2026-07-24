@@ -93,4 +93,5 @@ export interface LeaderboardEntry {
   name: string;
   email: string;
   totalScore: number;
+  todayScore: number;
 }
