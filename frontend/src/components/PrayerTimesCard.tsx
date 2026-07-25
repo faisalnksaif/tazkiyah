@@ -110,6 +110,15 @@ const PRAYER_SKY_THEMES: Record<PrayerName, PrayerSkyTheme> = {
   },
 };
 
+function withAlpha(hex: string, alpha: number): string {
+  const normalized = hex.replace('#', '');
+  if (normalized.length !== 6) return hex;
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function formatClock(time: string): string {
   return moment(time, 'H:mm').format('h:mm A');
 }
@@ -151,6 +160,7 @@ const styles = StyleSheet.create({
 export function PrayerTimesCard({ prayerTimes }: PrayerTimesCardProps) {
   const theme = useTheme();
   const useIslamicTheme = theme.variant === 'islamic';
+  const isDarkMode = theme.mode === 'dark';
   const [now, setNow] = useState(nowIst());
   const themeTransition = useRef(new Animated.Value(1)).current;
   const glowDrift = useRef(new Animated.Value(0)).current;
@@ -234,9 +244,31 @@ export function PrayerTimesCard({ prayerTimes }: PrayerTimesCardProps) {
   const skyTopColor = useIslamicTheme ? themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.top, themeTo.top] }) : theme.colors.surface;
   const glowAColor = useIslamicTheme ? themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.glowA, themeTo.glowA] }) : 'transparent';
   const glowBColor = useIslamicTheme ? themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.glowB, themeTo.glowB] }) : 'transparent';
-  const textPrimaryColor = useIslamicTheme ? themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.textPrimary, themeTo.textPrimary] }) : theme.colors.text;
-  const textSecondaryColor = useIslamicTheme ? themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.textSecondary, themeTo.textSecondary] }) : theme.colors.textMuted;
-  const accentColor = useIslamicTheme ? themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.accent, themeTo.accent] }) : theme.colors.primary;
+  const textPrimaryColor = useIslamicTheme
+    ? isDarkMode
+      ? '#F2F7FF'
+      : themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.textPrimary, themeTo.textPrimary] })
+    : theme.colors.text;
+  const textSecondaryColor = useIslamicTheme
+    ? isDarkMode
+      ? 'rgba(242,247,255,0.84)'
+      : themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.textSecondary, themeTo.textSecondary] })
+    : theme.colors.textMuted;
+  const accentColor = useIslamicTheme
+    ? isDarkMode
+      ? '#F0C97E'
+      : themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.accent, themeTo.accent] })
+    : theme.colors.primary;
+  const activeIconColor = useIslamicTheme
+    ? isDarkMode
+      ? '#F0C97E'
+      : themeTo.accent
+    : theme.colors.primary;
+  const passiveIconColor = useIslamicTheme
+    ? isDarkMode
+      ? withAlpha('#DCE7FA', 0.86)
+      : themeTo.icon
+    : theme.colors.primaryDark;
   const ornamentColor = useIslamicTheme ? themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.ornament, themeTo.ornament] }) : theme.colors.primarySoft;
   const patternColor = useIslamicTheme ? themeTransition.interpolate({ inputRange: [0, 1], outputRange: [themeFrom.pattern, themeTo.pattern] }) : 'transparent';
 
@@ -459,7 +491,7 @@ export function PrayerTimesCard({ prayerTimes }: PrayerTimesCardProps) {
                 <Feather
                   name={PRAYER_ICONS[entry.name]}
                   size={useIslamicTheme ? 14 : 16}
-                  color={active ? (useIslamicTheme ? themeTo.accent : theme.colors.primary) : (useIslamicTheme ? themeTo.icon : theme.colors.primaryDark)}
+                  color={active ? activeIconColor : passiveIconColor}
                   style={useIslamicTheme && dynamicStyles.itemIconCompact}
                 />
                 <Animated.Text style={[dynamicStyles.itemLabel, active && dynamicStyles.itemLabelActive, { color: active ? accentColor : textSecondaryColor }]}>
