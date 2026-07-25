@@ -26,6 +26,7 @@ const Tab = createBottomTabNavigator();
 export function MainNavigator() {
   const { user } = useAuth();
   const theme = useTheme();
+  const useIslamicTheme = theme.variant === 'islamic';
 
   return (
     <Tab.Navigator
@@ -34,14 +35,20 @@ export function MainNavigator() {
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.border,
+          backgroundColor: useIslamicTheme ? theme.colors.surface : theme.colors.surface,
+          borderTopColor: useIslamicTheme ? theme.colors.border : theme.colors.border,
           paddingTop: theme.spacing.sm,
           paddingBottom: theme.spacing.sm,
           height: 64,
         },
         tabBarItemStyle: { paddingVertical: theme.spacing.xs },
-        tabBarIcon: ({ color, size }) => <Feather name={TAB_ICONS[route.name]} size={size - 6} color={color} />,
+        tabBarIcon: ({ color, size, focused }) => (
+          <Feather name={TAB_ICONS[route.name]} size={size - 6} color={color} />
+        ),
+        tabBarLabelStyle: {
+          fontWeight: theme.fontWeights.medium,
+          letterSpacing: useIslamicTheme ? 0.4 : 0,
+        },
       })}
     >
       <Tab.Screen name="Today" component={TodayChecklistScreen} />

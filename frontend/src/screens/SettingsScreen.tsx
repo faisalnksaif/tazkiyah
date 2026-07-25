@@ -14,7 +14,7 @@ import { pushService } from '../services/PushService';
 
 export function SettingsScreen() {
   const theme = useTheme();
-  const { mode, toggleMode } = useThemeMode();
+  const { mode, variant, setVariant, toggleMode } = useThemeMode();
   const { user, logout } = useAuth();
   const { showToast } = useToast();
   const [notificationLoading, setNotificationLoading] = useState(false);
@@ -88,6 +88,15 @@ export function SettingsScreen() {
           <View style={styles.row}>
             <Text style={styles.label}>Dark mode</Text>
             <Toggle value={mode === 'dark'} onValueChange={toggleMode} />
+          </View>
+          <View style={[styles.row, { marginTop: theme.spacing.md }]}> 
+            <View style={{ flex: 1, paddingRight: theme.spacing.sm }}>
+              <Text style={styles.label}>Islamic theme</Text>
+              <Text style={{ fontSize: theme.fontSizes.xs, color: theme.colors.textMuted, marginTop: 2 }}>
+                Uses the custom warm teal, gold, and crescent-inspired visual style.
+              </Text>
+            </View>
+            <Toggle value={variant === 'islamic'} onValueChange={(value) => setVariant(value ? 'islamic' : 'classic')} />
           </View>
         </Card>
 

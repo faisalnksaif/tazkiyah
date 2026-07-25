@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 
 // Deterministic palette so the same name always gets the same color.
-const PALETTE = ['#2F6E5C', '#C79A3F', '#3E8E5A', '#1F4E40', '#D8A32E', '#6B8E7A'];
+const PALETTE = ['#1D7F66', '#CFA24B', '#2F6659', '#4C8F78', '#B8883B', '#245A4C'];
 
 function colorForName(name: string) {
   const hash = name.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);

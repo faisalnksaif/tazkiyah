@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeProvider';
-import { getActivityIcon } from '../utils/activityIcons';
+import { ActivityGlyph } from './ActivityGlyph';
 
 interface ActivityIconProps {
   name: string;
@@ -38,7 +37,7 @@ export function ActivityIcon({ name, complete }: ActivityIconProps) {
       style={[styles.watermark, { transform: [{ scale }], opacity: complete ? 0.35 : 0.14 }]}
       pointerEvents="none"
     >
-      <Feather name={getActivityIcon(name)} size={64} color={theme.colors.primary} />
+      <ActivityGlyph name={name} color={theme.colors.primary} size={64} />
     </Animated.View>
   );
 }

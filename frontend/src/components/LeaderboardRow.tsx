@@ -58,7 +58,7 @@ export function LeaderboardRow({ entry, rank, isMe, previousScore, onPress }: Le
 
   const pulseBackground = pulse.interpolate({
     inputRange: [0, 1],
-    outputRange: ['rgba(95,203,160,0)', 'rgba(95,203,160,0.25)'],
+    outputRange: ['rgba(0,0,0,0)', theme.mode === 'dark' ? 'rgba(89,193,160,0.24)' : 'rgba(29,127,102,0.18)'],
   });
 
   return (
