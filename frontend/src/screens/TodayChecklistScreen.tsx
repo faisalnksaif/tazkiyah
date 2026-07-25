@@ -17,6 +17,8 @@ import { appConfig } from '../config/appConfig';
 import { useTheme } from '../theme/ThemeProvider';
 import { useToast } from '../context/ToastContext';
 import { toDateKey } from '../utils/dateUtils';
+import { getPraise } from '../utils/activityPraise';
+import { IslamicIllumination } from '../components/IslamicIllumination';
 
 const AnimatedFlatList = Animated.FlatList<Activity>;
 
@@ -27,7 +29,7 @@ const COLLAPSE_END = 220;
 
 export function TodayChecklistScreen() {
   const theme = useTheme();
-  const { showToast } = useToast();
+  const { showToast, showActivityToast } = useToast();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [entries, setEntries] = useState<DailyEntry[]>([]);
   const [status, setStatus] = useState<ChallengeStatus | null>(null);
@@ -78,21 +80,32 @@ export function TodayChecklistScreen() {
 
   const handleAddIncrement = async (activity: Activity, value: number) => {
     await entryService.addIncrement(activity._id, value);
-    const sign = value > 0 ? '+' : '-';
-    showToast(`${sign}${Math.abs(value)} ${activity.unit} — ${activity.name}`, value > 0 ? 'success' : 'info');
+    if (value > 0) {
+      const { phrase, emoji } = getPraise(activity.name);
+      showActivityToast(emoji, phrase, `+${value} ${activity.unit}`);
+    } else {
+      showToast(`${value} ${activity.unit} — ${activity.name}`, 'info');
+    }
     await load();
   };
 
   const handleToggleCheckbox = async (activity: Activity, done: boolean) => {
     await entryService.setCheckbox(activity._id, done);
-    if (done) showToast(`${activity.name} marked done`);
+    if (done) {
+      const { phrase, emoji } = getPraise(activity.name);
+      showActivityToast(emoji, phrase, activity.name);
+    }
     await load();
   };
 
   const handleToggleSubItem = async (activity: Activity, label: string, done: boolean, jamaath: boolean) => {
     await entryService.setChecklistItem(activity._id, label, done, jamaath);
-    if (jamaath) showToast(`${label} completed in jama'ath`);
-    else if (done) showToast(`${label} completed`);
+    if (jamaath) {
+      showActivityToast('🕌', "Jama'ath prayer — extra reward!", label);
+    } else if (done) {
+      const { phrase, emoji } = getPraise(activity.name);
+      showActivityToast(emoji, phrase, label);
+    }
     await load();
   };
 
@@ -119,6 +132,7 @@ export function TodayChecklistScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <IslamicIllumination />
       <Header
         title="Today's Checklist"
         eyebrow={eyebrow}

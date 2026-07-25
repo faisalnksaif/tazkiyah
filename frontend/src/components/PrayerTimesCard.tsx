@@ -375,9 +375,9 @@ export function PrayerTimesCard({ prayerTimes }: PrayerTimesCardProps) {
     },
     nextRow: { marginBottom: useIslamicTheme ? theme.spacing.xs : theme.spacing.sm, paddingHorizontal: theme.spacing.xs },
     nextLabelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 0 },
-    nextLabel: { fontSize: useIslamicTheme ? 10.5 : theme.fontSizes.xs, textTransform: 'uppercase', letterSpacing: 1 },
-    nextValue: { fontSize: useIslamicTheme ? theme.fontSizes.sm : theme.fontSizes.md, fontWeight: theme.fontWeights.bold },
-    nextValueAccent: {},
+    nextLabel: { fontSize: useIslamicTheme ? 10.5 : theme.fontSizes.xs, textTransform: 'uppercase', letterSpacing: 1, color: theme.colors.textMuted },
+    nextValue: { fontSize: useIslamicTheme ? theme.fontSizes.sm : theme.fontSizes.md, fontWeight: theme.fontWeights.bold, color: theme.colors.text },
+    nextValueAccent: { color: theme.colors.primary },
     progressTrack: {
       height: useIslamicTheme ? 3 : 4,
       borderRadius: 2,
@@ -396,10 +396,10 @@ export function PrayerTimesCard({ prayerTimes }: PrayerTimesCardProps) {
     },
     itemActive: { backgroundColor: useIslamicTheme ? 'rgba(255,255,255,0.14)' : theme.colors.primarySoft },
     itemIconCompact: { marginBottom: 2 },
-    itemLabel: { fontSize: useIslamicTheme ? 11 : theme.fontSizes.xs, marginTop: useIslamicTheme ? 2 : 4 },
-    itemLabelActive: { fontWeight: theme.fontWeights.medium },
-    itemTime: { fontSize: useIslamicTheme ? 10.5 : theme.fontSizes.xs, marginTop: useIslamicTheme ? 0 : 2 },
-    itemTimeActive: { fontWeight: theme.fontWeights.medium },
+    itemLabel: { fontSize: useIslamicTheme ? 11 : theme.fontSizes.xs, marginTop: useIslamicTheme ? 2 : 4, color: theme.colors.textMuted },
+    itemLabelActive: { fontWeight: theme.fontWeights.medium, color: theme.colors.primary },
+    itemTime: { fontSize: useIslamicTheme ? 10.5 : theme.fontSizes.xs, marginTop: useIslamicTheme ? 0 : 2, color: theme.colors.text },
+    itemTimeActive: { fontWeight: theme.fontWeights.medium, color: theme.colors.primary },
     activeDot: { width: useIslamicTheme ? 3 : 4, height: useIslamicTheme ? 3 : 4, borderRadius: 2, marginTop: useIslamicTheme ? 2 : 3 },
   });
 
@@ -429,10 +429,18 @@ export function PrayerTimesCard({ prayerTimes }: PrayerTimesCardProps) {
             </Animated.View>
           </>
         ) : null}
-        {next ? (
+        {next && useIslamicTheme ? (
+          <View style={[dynamicStyles.nextRow, { marginBottom: theme.spacing.xs, flexDirection: 'row', alignItems: 'center' }]}>
+            <PulseDot color={themeTo.accent} />
+            <View style={[dynamicStyles.progressTrack, { flex: 1 }]}>
+              <Animated.View style={[dynamicStyles.progressFill, { width: `${windowRatio * 100}%`, backgroundColor: accentColor }]} />
+            </View>
+          </View>
+        ) : null}
+        {next && !useIslamicTheme ? (
           <View style={dynamicStyles.nextRow}>
             <View style={dynamicStyles.nextLabelRow}>
-              <PulseDot color={useIslamicTheme ? themeTo.accent : theme.colors.primary} />
+              <PulseDot color={theme.colors.primary} />
               <Animated.Text style={[dynamicStyles.nextLabel, { color: textSecondaryColor }]}>Next: {next.label}</Animated.Text>
             </View>
             <Animated.Text style={[dynamicStyles.nextValue, { color: textPrimaryColor }]}> 

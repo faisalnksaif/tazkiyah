@@ -22,59 +22,59 @@ type ActivityCardMood = {
   border: string;
 };
 
-function resolveCardMood(activity: Activity): ActivityCardMood {
+function resolveCardMood(activity: Activity, dark: boolean): ActivityCardMood {
   const name = activity.name.toLowerCase();
   if (name.includes('dhikr') || name.includes('zikr') || name.includes('tasbeeh')) {
     return {
-      base: '#1F4C41',
-      tintA: 'rgba(120, 201, 166, 0.24)',
-      tintB: 'rgba(236, 212, 145, 0.2)',
-      pattern: 'rgba(255, 255, 255, 0.08)',
-      border: 'rgba(188, 225, 206, 0.34)',
+      base: dark ? '#112E28' : '#1F4C41',
+      tintA: dark ? 'rgba(114,212,206,0.22)' : 'rgba(120,201,166,0.24)',
+      tintB: dark ? 'rgba(232,196,122,0.18)' : 'rgba(236,212,145,0.2)',
+      pattern: 'rgba(255,255,255,0.09)',
+      border: dark ? 'rgba(114,212,206,0.38)' : 'rgba(188,225,206,0.34)',
     };
   }
   if (name.includes('quran') || name.includes('qur') || name.includes('tilawah')) {
     return {
-      base: '#24504A',
-      tintA: 'rgba(134, 220, 196, 0.2)',
-      tintB: 'rgba(241, 193, 130, 0.18)',
-      pattern: 'rgba(255, 255, 255, 0.08)',
-      border: 'rgba(188, 220, 211, 0.3)',
+      base: dark ? '#0F2A35' : '#24504A',
+      tintA: dark ? 'rgba(114,212,206,0.2)' : 'rgba(134,220,196,0.2)',
+      tintB: dark ? 'rgba(232,196,122,0.16)' : 'rgba(241,193,130,0.18)',
+      pattern: 'rgba(255,255,255,0.09)',
+      border: dark ? 'rgba(114,212,206,0.32)' : 'rgba(188,220,211,0.3)',
     };
   }
   if (name.includes('prayer') || name.includes('salah') || name.includes('salat')) {
     return {
-      base: '#2A4D73',
-      tintA: 'rgba(156, 200, 255, 0.24)',
-      tintB: 'rgba(251, 198, 141, 0.16)',
-      pattern: 'rgba(255, 255, 255, 0.1)',
-      border: 'rgba(189, 215, 244, 0.32)',
+      base: dark ? '#0E1F40' : '#2A4D73',
+      tintA: dark ? 'rgba(130,180,255,0.28)' : 'rgba(156,200,255,0.24)',
+      tintB: dark ? 'rgba(232,196,122,0.16)' : 'rgba(251,198,141,0.16)',
+      pattern: 'rgba(255,255,255,0.1)',
+      border: dark ? 'rgba(130,180,255,0.36)' : 'rgba(189,215,244,0.32)',
     };
   }
   if (name.includes('charity') || name.includes('sadaqah') || name.includes('zakat')) {
     return {
-      base: '#5E4524',
-      tintA: 'rgba(246, 210, 136, 0.2)',
-      tintB: 'rgba(157, 216, 186, 0.16)',
-      pattern: 'rgba(255, 255, 255, 0.08)',
-      border: 'rgba(235, 214, 167, 0.3)',
+      base: dark ? '#2A1A08' : '#5E4524',
+      tintA: dark ? 'rgba(232,196,122,0.24)' : 'rgba(246,210,136,0.2)',
+      tintB: dark ? 'rgba(114,212,206,0.14)' : 'rgba(157,216,186,0.16)',
+      pattern: 'rgba(255,255,255,0.09)',
+      border: dark ? 'rgba(232,196,122,0.38)' : 'rgba(235,214,167,0.3)',
     };
   }
   if (activity.type === 'duration') {
     return {
-      base: '#2F5A4D',
-      tintA: 'rgba(145, 225, 196, 0.2)',
-      tintB: 'rgba(244, 214, 160, 0.16)',
-      pattern: 'rgba(255, 255, 255, 0.08)',
-      border: 'rgba(194, 227, 214, 0.3)',
+      base: dark ? '#102622' : '#2F5A4D',
+      tintA: dark ? 'rgba(114,212,206,0.2)' : 'rgba(145,225,196,0.2)',
+      tintB: dark ? 'rgba(232,196,122,0.14)' : 'rgba(244,214,160,0.16)',
+      pattern: 'rgba(255,255,255,0.08)',
+      border: dark ? 'rgba(114,212,206,0.3)' : 'rgba(194,227,214,0.3)',
     };
   }
   return {
-    base: '#1F3A34',
-    tintA: 'rgba(125, 199, 176, 0.16)',
-    tintB: 'rgba(233, 198, 132, 0.14)',
-    pattern: 'rgba(255, 255, 255, 0.07)',
-    border: 'rgba(182, 214, 202, 0.26)',
+    base: dark ? '#0E1D2E' : '#1F3A34',
+    tintA: dark ? 'rgba(114,212,206,0.16)' : 'rgba(125,199,176,0.16)',
+    tintB: dark ? 'rgba(232,196,122,0.12)' : 'rgba(233,198,132,0.14)',
+    pattern: 'rgba(255,255,255,0.08)',
+    border: dark ? 'rgba(114,212,206,0.24)' : 'rgba(182,214,202,0.26)',
   };
 }
 
@@ -97,7 +97,7 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
   const useIslamicTheme = theme.variant === 'islamic';
   const [liveDragValue, setLiveDragValue] = useState<number | null>(null);
   const total = sumIncrements(entry);
-  const mood = useIslamicTheme ? resolveCardMood(activity) : null;
+  const mood = useIslamicTheme ? resolveCardMood(activity, theme.mode === 'dark') : null;
   const textOnMood = useIslamicTheme ? '#F6F5EF' : theme.colors.text;
   const textOnMoodMuted = useIslamicTheme ? 'rgba(246,245,239,0.82)' : theme.colors.textMuted;
 

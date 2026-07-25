@@ -26,7 +26,9 @@ export function Card({ children, style }: { children: React.ReactNode; style?: V
       width: 142,
       height: 104,
       borderRadius: 90,
-      backgroundColor: useIslamicTheme ? 'rgba(90,183,178,0.11)' : 'rgba(29,127,102,0.08)',
+      backgroundColor: useIslamicTheme
+        ? theme.mode === 'dark' ? 'rgba(114,212,206,0.14)' : 'rgba(90,183,178,0.11)'
+        : 'rgba(29,127,102,0.08)',
       transform: [{ rotate: '-12deg' }],
     },
     orbB: {
@@ -36,7 +38,9 @@ export function Card({ children, style }: { children: React.ReactNode; style?: V
       width: 142,
       height: 104,
       borderRadius: 90,
-      backgroundColor: useIslamicTheme ? 'rgba(213,181,106,0.12)' : 'rgba(207,162,75,0.08)',
+      backgroundColor: useIslamicTheme
+        ? theme.mode === 'dark' ? 'rgba(232,196,122,0.16)' : 'rgba(213,181,106,0.12)'
+        : 'rgba(207,162,75,0.08)',
       transform: [{ rotate: '12deg' }],
     },
     patternDotA: {
@@ -46,7 +50,9 @@ export function Card({ children, style }: { children: React.ReactNode; style?: V
       width: 5,
       height: 5,
       borderRadius: 3,
-      backgroundColor: useIslamicTheme ? 'rgba(90,183,178,0.35)' : 'transparent',
+      backgroundColor: useIslamicTheme
+        ? theme.mode === 'dark' ? 'rgba(114,212,206,0.5)' : 'rgba(90,183,178,0.35)'
+        : 'transparent',
     },
     patternDotB: {
       position: 'absolute',
@@ -55,7 +61,9 @@ export function Card({ children, style }: { children: React.ReactNode; style?: V
       width: 3,
       height: 3,
       borderRadius: 2,
-      backgroundColor: useIslamicTheme ? 'rgba(213,181,106,0.42)' : 'transparent',
+      backgroundColor: useIslamicTheme
+        ? theme.mode === 'dark' ? 'rgba(232,196,122,0.55)' : 'rgba(213,181,106,0.42)'
+        : 'transparent',
     },
     content: { zIndex: 1 },
   });

@@ -58,19 +58,21 @@ const islamicLightColors = {
 };
 
 const islamicDarkColors = {
-  primary: '#5AB7B2',
-  primaryDark: '#3F8E89',
-  primarySoft: '#1C3138',
-  secondary: '#D5B56A',
-  secondarySoft: '#342C1F',
-  background: '#12161D',
-  surface: '#1A2230',
-  text: '#F4F2EC',
-  textMuted: '#A8AFB2',
-  border: '#2E3945',
-  success: '#5AB7B2',
+  // Midnight-blue inspired by illuminated mosque interiors at night.
+  // Teal accent references Ottoman tilework; gold secondary echoes arabesque gilt.
+  primary: '#72D4CE',     // bright mosque-tile teal
+  primaryDark: '#4CAAA5',
+  primarySoft: '#162E38', // deep teal-tinted card fill
+  secondary: '#E8C47A',   // warm gold — Quran gilding
+  secondarySoft: '#3A2A14',
+  background: '#0C1220',  // deep midnight blue
+  surface: '#13203A',     // richer navy — mosque dome at night
+  text: '#F6F4EE',
+  textMuted: '#9BAAB4',
+  border: '#243252',      // navy border
+  success: '#72D4CE',
   danger: '#E27A6D',
-  warning: '#D3B06A',
+  warning: '#DDB96E',
   white: '#FFFFFF',
   black: '#000000',
 };

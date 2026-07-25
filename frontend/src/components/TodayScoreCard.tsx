@@ -53,8 +53,8 @@ export function TodayScoreCard({ score, maxScore }: TodayScoreCardProps) {
     card: {
       overflow: 'hidden',
       borderWidth: useIslamicTheme ? 1 : 0,
-      borderColor: useIslamicTheme ? (theme.mode === 'dark' ? 'rgba(203,167,102,0.38)' : 'rgba(182,150,80,0.28)') : theme.colors.border,
-      backgroundColor: useIslamicTheme ? (theme.mode === 'dark' ? '#1D3530' : '#F4EEDF') : theme.colors.surface,
+      borderColor: useIslamicTheme ? (theme.mode === 'dark' ? 'rgba(232,196,122,0.45)' : 'rgba(182,150,80,0.28)') : theme.colors.border,
+      backgroundColor: useIslamicTheme ? (theme.mode === 'dark' ? '#0E1A30' : '#F4EEDF') : theme.colors.surface,
     },
     backdrop: {
       ...StyleSheet.absoluteFillObject,
