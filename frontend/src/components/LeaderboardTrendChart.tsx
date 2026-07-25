@@ -12,6 +12,12 @@ interface LeaderboardTrendChartProps {
 const CHART_HEIGHT = 140;
 const RIGHT_LABEL_PAD = 56; // reserved space for the endpoint's value label
 
+function compactDayLabel(value: string): string {
+  // backend typically returns YYYY-MM-DD; fallback to raw if a different format appears
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value.slice(5);
+  return value;
+}
+
 export function LeaderboardTrendChart({ trend }: LeaderboardTrendChartProps) {
   const theme = useTheme();
   const [width, setWidth] = useState(0);
@@ -28,9 +34,11 @@ export function LeaderboardTrendChart({ trend }: LeaderboardTrendChartProps) {
 
   const { days, points } = trend;
   const maxValue = Math.max(1, ...points);
+  const minValue = Math.min(...points);
+  const firstValue = points[0];
   const plotWidth = Math.max(0, width - RIGHT_LABEL_PAD);
   const topPad = 10;
-  const bottomPad = 10;
+  const bottomPad = 22;
   const plotHeight = CHART_HEIGHT - topPad - bottomPad;
 
   const xFor = (i: number) => (points.length > 1 ? (i / (points.length - 1)) * plotWidth : plotWidth / 2);
@@ -42,6 +50,17 @@ export function LeaderboardTrendChart({ trend }: LeaderboardTrendChartProps) {
   const lastX = xFor(points.length - 1);
   const lastY = yFor(points[points.length - 1]);
   const currentTotal = points[points.length - 1];
+  const delta = currentTotal - firstValue;
+
+  const peakValue = Math.max(...points);
+  const peakIndex = points.findIndex((p) => p === peakValue);
+  const peakX = xFor(peakIndex);
+  const peakY = yFor(peakValue);
+
+  const startLabel = compactDayLabel(days[0]);
+  const endLabel = compactDayLabel(days[days.length - 1]);
+
+  const midpoint = minValue + (maxValue - minValue) / 2;
 
   return (
     <Card>
@@ -52,9 +71,13 @@ export function LeaderboardTrendChart({ trend }: LeaderboardTrendChartProps) {
           <Svg width={width} height={CHART_HEIGHT}>
             {/* Recessive gridlines: baseline and top */}
             <Line x1={0} y1={yFor(0)} x2={plotWidth} y2={yFor(0)} stroke={theme.colors.border} strokeWidth={1} />
+            <Line x1={0} y1={yFor(midpoint)} x2={plotWidth} y2={yFor(midpoint)} stroke={theme.colors.border} strokeWidth={1} strokeDasharray="3 4" />
             <Line x1={0} y1={yFor(maxValue)} x2={plotWidth} y2={yFor(maxValue)} stroke={theme.colors.border} strokeWidth={1} />
             <SvgText x={0} y={yFor(0) - 3} fontSize={10} fill={theme.colors.textMuted}>
               0
+            </SvgText>
+            <SvgText x={0} y={yFor(midpoint) - 3} fontSize={10} fill={theme.colors.textMuted}>
+              {Math.round(midpoint)}
             </SvgText>
             <SvgText x={0} y={yFor(maxValue) - 3} fontSize={10} fill={theme.colors.textMuted}>
               {Math.round(maxValue)}
@@ -63,13 +86,38 @@ export function LeaderboardTrendChart({ trend }: LeaderboardTrendChartProps) {
             {/* Single series — no legend needed, area fill carries the "this is one story" read */}
             <Path d={areaPath} fill={theme.colors.primary} fillOpacity={0.1} stroke="none" />
             <Path d={linePath} stroke={theme.colors.primary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+
+            {/* Peak marker */}
+            <Circle cx={peakX} cy={peakY} r={5} fill={theme.colors.surface} />
+            <Circle cx={peakX} cy={peakY} r={3} fill={theme.colors.primary} />
+
             <Circle cx={lastX} cy={lastY} r={6} fill={theme.colors.surface} />
             <Circle cx={lastX} cy={lastY} r={4} fill={theme.colors.primary} />
             <SvgText x={lastX + 10} y={lastY + 4} fontSize={12} fontWeight="700" fill={theme.colors.text}>
               {Math.round(currentTotal)}
             </SvgText>
+
+            {/* Start/end day labels */}
+            <SvgText x={0} y={CHART_HEIGHT - 8} fontSize={10} fill={theme.colors.textMuted}>
+              {startLabel}
+            </SvgText>
+            <SvgText x={Math.max(0, plotWidth - 34)} y={CHART_HEIGHT - 8} fontSize={10} fill={theme.colors.textMuted}>
+              {endLabel}
+            </SvgText>
           </Svg>
         ) : null}
+      </View>
+
+      <View style={{ marginTop: theme.spacing.xs, flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ color: theme.colors.textMuted, fontSize: theme.fontSizes.xs }}>
+          Start <Text style={{ color: theme.colors.text, fontWeight: theme.fontWeights.medium }}>{Math.round(firstValue)}</Text>
+        </Text>
+        <Text style={{ color: theme.colors.textMuted, fontSize: theme.fontSizes.xs }}>
+          Peak <Text style={{ color: theme.colors.text, fontWeight: theme.fontWeights.medium }}>{Math.round(peakValue)}</Text>
+        </Text>
+        <Text style={{ color: theme.colors.textMuted, fontSize: theme.fontSizes.xs }}>
+          Change <Text style={{ color: delta >= 0 ? theme.colors.primary : theme.colors.danger, fontWeight: theme.fontWeights.bold }}>{delta >= 0 ? '+' : ''}{Math.round(delta)}</Text>
+        </Text>
       </View>
     </Card>
   );
