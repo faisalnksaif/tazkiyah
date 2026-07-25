@@ -1,6 +1,7 @@
 const moment = require('moment');
 const prayerTimes = require('../prayer-times.json');
 const { toDateKey } = require('../utils/dateUtils');
+const { to24Hour } = require('../utils/prayerTimeUtils');
 const PushSubscription = require('../models/PushSubscription');
 const PrayerReminderLog = require('../models/PrayerReminderLog');
 const PushService = require('./PushService');
@@ -54,7 +55,7 @@ class PrayerReminderScheduler {
     const dateKey = toDateKey(now);
 
     for (const prayer of PRAYERS) {
-      const prayerAt = todaySchedule[prayer];
+      const prayerAt = to24Hour(prayer, todaySchedule[prayer]);
       if (!prayerAt) continue;
 
       const reminderAt = moment(prayerAt, 'H:mm').subtract(5, 'minutes').format('H:mm');

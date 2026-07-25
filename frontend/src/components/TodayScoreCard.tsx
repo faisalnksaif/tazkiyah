@@ -54,7 +54,7 @@ export function TodayScoreCard({ score, maxScore }: TodayScoreCardProps) {
       overflow: 'hidden',
       borderWidth: useIslamicTheme ? 1 : 0,
       borderColor: useIslamicTheme ? (theme.mode === 'dark' ? 'rgba(232,196,122,0.45)' : 'rgba(182,150,80,0.28)') : theme.colors.border,
-      backgroundColor: useIslamicTheme ? (theme.mode === 'dark' ? '#0E1A30' : '#F4EEDF') : theme.colors.surface,
+      backgroundColor: 'transparent',
     },
     backdrop: {
       ...StyleSheet.absoluteFillObject,

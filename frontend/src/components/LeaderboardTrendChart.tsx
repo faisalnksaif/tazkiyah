@@ -10,7 +10,7 @@ interface LeaderboardTrendChartProps {
 }
 
 const CHART_HEIGHT = 140;
-const RIGHT_LABEL_PAD = 56; // reserved space for the endpoint's value label
+const RIGHT_LABEL_PAD = 0;
 
 function compactDayLabel(value: string): string {
   // backend typically returns YYYY-MM-DD; fallback to raw if a different format appears
@@ -59,6 +59,7 @@ export function LeaderboardTrendChart({ trend }: LeaderboardTrendChartProps) {
 
   const startLabel = compactDayLabel(days[0]);
   const endLabel = compactDayLabel(days[days.length - 1]);
+  const currentLabelX = Math.max(8, lastX - 8);
 
   const midpoint = minValue + (maxValue - minValue) / 2;
 
@@ -93,7 +94,7 @@ export function LeaderboardTrendChart({ trend }: LeaderboardTrendChartProps) {
 
             <Circle cx={lastX} cy={lastY} r={6} fill={theme.colors.surface} />
             <Circle cx={lastX} cy={lastY} r={4} fill={theme.colors.primary} />
-            <SvgText x={lastX + 10} y={lastY + 4} fontSize={12} fontWeight="700" fill={theme.colors.text}>
+            <SvgText x={currentLabelX} y={lastY-1 } fontSize={12} fontWeight="700" fill={theme.colors.text} textAnchor="end">
               {Math.round(currentTotal)}
             </SvgText>
 

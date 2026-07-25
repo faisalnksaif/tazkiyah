@@ -1,5 +1,6 @@
 const moment = require('moment');
 const prayerTimes = require('../prayer-times.json');
+const { to24Hour } = require('../utils/prayerTimeUtils');
 
 const IST_OFFSET = '+05:30';
 const PRAYERS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
@@ -15,10 +16,10 @@ function getToday(now = new Date()) {
   return {
     date: istNow.format('YYYY-MM-DD'),
     prayers: PRAYERS.reduce((acc, prayer) => {
-      if (schedule[prayer]) acc[prayer] = schedule[prayer];
+      if (schedule[prayer]) acc[prayer] = to24Hour(prayer, schedule[prayer]);
       return acc;
     }, {}),
-    tomorrowFajr,
+    tomorrowFajr: to24Hour('fajr', tomorrowFajr),
   };
 }
 
