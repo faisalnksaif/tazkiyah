@@ -254,7 +254,7 @@ export function ActivityItem({ activity, entry, onAddIncrement, onToggleCheckbox
           <ProgressSlider
             total={total}
             targetValue={activity.targetValue}
-            step={stepForActivity(activity.type, activity.targetValue)}
+            step={stepForActivity(activity.type, activity.targetValue, activity.name)}
             onDragValueChange={(v) => {
               if (v !== null) setLiveDragValue(v);
             }}

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { PanResponder, StyleSheet, View, ViewStyle } from 'react-native';
+import { PanResponder, Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeProvider';
 
 interface ProgressSliderProps {
@@ -62,6 +63,11 @@ export function ProgressSlider({ total, targetValue, step, onDragValueChange, on
     return ratio * max;
   };
 
+  const stepBy = (direction: 1 | -1) => {
+    const next = Math.max(0, Math.min(total + direction * step, max));
+    if (next !== total) onCommitDelta(next - total);
+  };
+
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
@@ -90,14 +96,30 @@ export function ProgressSlider({ total, targetValue, step, onDragValueChange, on
   const ratio = max > 0 ? dragValue / max : 0;
   const thumbLeft = measuredWidth > 0 ? Math.max(0, Math.min(ratio, 1)) * measuredWidth - THUMB_SIZE / 2 : -THUMB_SIZE / 2;
 
+  const atMin = dragValue <= 0;
+  const atMax = dragValue >= max;
+
   const styles = StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    stepButton: {
+      width: THUMB_SIZE,
+      height: THUMB_SIZE,
+      borderRadius: THUMB_SIZE / 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     // Fixed height equal to the thumb size, with the track centered inside via
     // justifyContent — avoids relying on padding-box vs. border-box behavior
     // for the absolutely-positioned thumb (RN and web disagree on that), so
     // centering can't drift between platforms.
     touchArea: {
+      flex: 1,
       height: THUMB_SIZE,
       justifyContent: 'center',
+      marginHorizontal: 8,
       // Web-only: stops mobile browsers from interpreting a horizontal drag
       // here as a page/list scroll gesture, which otherwise intermittently
       // wins the touch away from our PanResponder mid-drag.
@@ -127,21 +149,39 @@ export function ProgressSlider({ total, targetValue, step, onDragValueChange, on
   });
 
   return (
-    <View
-      style={styles.touchArea}
-      onLayout={() => {
-        trackRef.current?.measure((_x, _y, width, _height, pageX) => {
-          trackWidth.current = width;
-          trackPageX.current = pageX;
-          setMeasuredWidth(width);
-        });
-      }}
-      {...panResponder.panHandlers}
-    >
-      <View ref={trackRef} style={styles.track}>
-        <View style={styles.fill} />
+    <View style={styles.row}>
+      <Pressable
+        style={styles.stepButton}
+        disabled={atMin}
+        onPress={() => stepBy(-1)}
+        hitSlop={8}
+      >
+        <Feather name="minus" size={16} color={atMin ? theme.colors.border : theme.colors.text} />
+      </Pressable>
+      <View
+        style={styles.touchArea}
+        onLayout={() => {
+          trackRef.current?.measure((_x, _y, width, _height, pageX) => {
+            trackWidth.current = width;
+            trackPageX.current = pageX;
+            setMeasuredWidth(width);
+          });
+        }}
+        {...panResponder.panHandlers}
+      >
+        <View ref={trackRef} style={styles.track}>
+          <View style={styles.fill} />
+        </View>
+        <View style={styles.thumb} pointerEvents="none" />
       </View>
-      <View style={styles.thumb} pointerEvents="none" />
+      <Pressable
+        style={styles.stepButton}
+        disabled={atMax}
+        onPress={() => stepBy(1)}
+        hitSlop={8}
+      >
+        <Feather name="plus" size={16} color={atMax ? theme.colors.border : theme.colors.text} />
+      </Pressable>
     </View>
   );
 }

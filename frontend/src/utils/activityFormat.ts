@@ -10,8 +10,19 @@ function counterStep(targetValue: number): number {
   return 1;
 }
 
+// Explicit step overrides for activities whose natural increment doesn't
+// match the auto-scaled default (e.g. Dhikr is logged in rounds of 250, not
+// the 100 the counter scale would pick; Thawheed study sessions run in
+// 30-minute blocks, not single minutes).
+const STEP_OVERRIDES: Record<string, number> = {
+  dhikr: 250,
+  thawheed: 30,
+};
+
 /** Slider step size for a counter/duration activity's ProgressSlider. */
-export function stepForActivity(type: ActivityType, targetValue: number): number {
+export function stepForActivity(type: ActivityType, targetValue: number, name?: string): number {
+  const override = name ? STEP_OVERRIDES[name.trim().toLowerCase()] : undefined;
+  if (override) return override;
   return type === 'duration' ? 1 : counterStep(targetValue || 1);
 }
 
