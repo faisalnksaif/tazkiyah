@@ -1,0 +1,30 @@
+{
+  "id": "/tazkiyah/",
+  "name": "Tazkiyah",
+  "short_name": "Tazkiyah",
+  "description": "Track daily spiritual activities, monitor progress, and follow challenge rankings.",
+  "start_url": "/tazkiyah/",
+  "scope": "/tazkiyah/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#000000",
+  "background_color": "#f6f5ef",
+  "icons": [
+    {
+      "src": "/tazkiyah/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/tazkiyah/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/tazkiyah/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
