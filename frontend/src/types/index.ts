@@ -95,9 +95,25 @@ export interface LeaderboardEntry {
   totalScore: number;
   todayScore: number;
   sparkline: number[];
+  dawaThisWeek: number;
+  dawaWeeklyTarget: number;
 }
 
 export interface LeaderboardTrend {
   days: string[];
   points: number[];
+}
+
+export interface DailyLeaderboardEntry {
+  userId: string;
+  name: string;
+  email: string;
+  score: number;
+  dawaThisWeek: number;
+  dawaWeeklyTarget: number;
+}
+
+export interface DailyLeaderboard {
+  date: string;
+  entries: DailyLeaderboardEntry[];
 }

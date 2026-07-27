@@ -16,12 +16,16 @@ const DEFAULT_ACTIVITIES = [
     type: 'checklist',
     targetValue: 5,
     unit: '',
-    pointsWeight: 25,
+    pointsWeight: 9,
     order: 4,
     subItems: [{ label: 'Fajr' }, { label: 'Dhuhr' }, { label: 'Asr' }, { label: 'Maghrib' }, { label: 'Isha' }],
   },
   { name: 'Exercise', description: 'Daily exercise', type: 'checkbox', targetValue: 1, unit: '', pointsWeight: 2.5, order: 5 },
   { name: 'Reading', description: 'Daily reading', type: 'duration', targetValue: 10, unit: 'minutes', pointsWeight: 2.5, order: 6 },
+  { name: "Da'wa", description: 'Sharing and spreading the message of Islam — mandatory 3 times per week', type: 'checkbox', targetValue: 1, unit: '', pointsWeight: 10, order: 7 },
+  { name: 'Perfume', description: 'Wearing perfume/attar', type: 'checkbox', targetValue: 1, unit: '', pointsWeight: 2, order: 8 },
+  { name: 'Drink Water', description: 'Staying hydrated', type: 'checkbox', targetValue: 1, unit: '', pointsWeight: 2, order: 9 },
+  { name: 'Neatness', description: 'Personal cleanliness and tidiness', type: 'checkbox', targetValue: 1, unit: '', pointsWeight: 2, order: 10 },
 ];
 
 async function seed() {

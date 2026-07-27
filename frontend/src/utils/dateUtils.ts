@@ -16,6 +16,10 @@ export function monthKey(dateKey: string): string {
   return dateKey.slice(0, 7); // YYYY-MM
 }
 
+export function addDays(dateKey: string, days: number): string {
+  return moment(dateKey, 'YYYY-MM-DD').add(days, 'days').format('YYYY-MM-DD');
+}
+
 /** Current moment shifted to IST, for time-of-day comparisons (e.g. prayer countdowns). */
 export function nowIst(): moment.Moment {
   return moment().utcOffset(IST_OFFSET);

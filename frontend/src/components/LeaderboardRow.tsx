@@ -6,7 +6,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { Card } from './Card';
 import { Avatar } from './Avatar';
 import { AnimatedNumber } from './AnimatedNumber';
-import { Sparkline } from './Sparkline';
+import { ScoreSignal } from './ScoreSignal';
 
 interface LeaderboardRowProps {
   entry: LeaderboardEntry;
@@ -49,6 +49,7 @@ export function LeaderboardRow({ entry, rank, isMe, previousScore, onPress }: Le
     nameBlock: { flex: 1 },
     name: { fontSize: theme.fontSizes.md, fontWeight: theme.fontWeights.bold, color: theme.colors.text },
     youBadge: { fontSize: theme.fontSizes.xs, fontWeight: theme.fontWeights.medium, color: theme.colors.primary, marginTop: 1 },
+    dawaBadge: { fontSize: theme.fontSizes.xs, fontWeight: theme.fontWeights.medium, marginTop: 1 },
     scoreBlock: { alignItems: 'flex-end' },
     score: { fontSize: theme.fontSizes.lg, fontWeight: theme.fontWeights.bold, color: theme.colors.primary },
     todayScore: { fontSize: theme.fontSizes.xs, color: theme.colors.textMuted, marginTop: 1 },
@@ -82,8 +83,16 @@ export function LeaderboardRow({ entry, rank, isMe, previousScore, onPress }: Le
                   {entry.name}
                 </Text>
                 {isMe ? <Text style={styles.youBadge}>You</Text> : null}
+                <Text
+                  style={[
+                    styles.dawaBadge,
+                    { color: entry.dawaThisWeek >= entry.dawaWeeklyTarget ? theme.colors.success : theme.colors.textMuted },
+                  ]}
+                >
+                  Da'wa {entry.dawaThisWeek}/{entry.dawaWeeklyTarget} this week
+                </Text>
               </View>
-              <Sparkline points={entry.sparkline} />
+              <ScoreSignal score={entry.todayScore} />
               <View style={styles.scoreBlock}>
                 <AnimatedNumber value={entry.totalScore} style={styles.score} />
                 <Text style={styles.todayScore}>+{entry.todayScore.toFixed(0)} today</Text>

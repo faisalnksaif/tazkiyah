@@ -28,7 +28,7 @@ export function CompactScoreBadge({ score, maxScore }: CompactScoreBadgeProps) {
       </View>
       <View>
         <Text style={styles.scoreText}>{score.toFixed(0)}</Text>
-        {maxScore > 0 ? <Text style={styles.maxText}>of {maxScore.toFixed(0)}</Text> : null}
+        {maxScore > 0 ? <Text style={styles.maxText}>of 100</Text> : null}
       </View>
     </View>
   );

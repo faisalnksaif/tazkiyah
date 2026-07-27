@@ -6,6 +6,15 @@ const leaderboard = asyncHandler(async (req, res) => {
   res.json(board);
 });
 
+const dailyLeaderboard = asyncHandler(async (req, res) => {
+  const { date } = req.params;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ message: 'date must be in YYYY-MM-DD format' });
+  }
+  const board = await ScoreService.getDailyLeaderboard(date);
+  res.json(board);
+});
+
 const myDailyBreakdown = asyncHandler(async (req, res) => {
   const breakdown = await ScoreService.getUserDailyBreakdown(req.user.id);
   res.json(breakdown);
@@ -21,4 +30,4 @@ const trend = asyncHandler(async (req, res) => {
   res.json(data);
 });
 
-module.exports = { leaderboard, myDailyBreakdown, userDailyBreakdown, trend };
+module.exports = { leaderboard, dailyLeaderboard, myDailyBreakdown, userDailyBreakdown, trend };

@@ -1,3 +1,4 @@
+const moment = require('moment');
 const DailyEntry = require('../models/DailyEntry');
 const DailyScore = require('../models/DailyScore');
 const Activity = require('../models/Activity');
@@ -11,6 +12,11 @@ const { toDateKey, addDays } = require('../utils/dateUtils');
 // current activity weights (summing to 90) caps a perfect day at 100.
 const PRAYER_ACTIVITY_NAME = '5 Daily Prayers';
 const JAMAATH_BONUS_POINTS = 2;
+
+// Mandatory 3x/week — tracked against the calendar week (Mon-Sun), not the
+// challenge's day list, since "per week" should reset on calendar boundaries.
+const DAWA_ACTIVITY_NAME = "Da'wa";
+const DAWA_WEEKLY_TARGET = 3;
 
 class ScoreService {
   /**
@@ -115,7 +121,52 @@ class ScoreService {
       totals.set(key, existing);
     }
 
+    const dawaCounts = await this.getWeeklyDawaCompletions(todayKey);
+    for (const [userId, entry] of totals) {
+      entry.dawaThisWeek = dawaCounts.get(userId) || 0;
+      entry.dawaWeeklyTarget = DAWA_WEEKLY_TARGET;
+    }
+
     return Array.from(totals.values()).sort((a, b) => b.totalScore - a.totalScore);
+  }
+
+  /** Leaderboard ranked by a single day's DailyScore, rather than the cumulative total. */
+  async getDailyLeaderboard(date) {
+    const scores = await DailyScore.find({ date }).populate('userId', 'name email role');
+    const dawaCounts = await this.getWeeklyDawaCompletions(date);
+
+    const entries = scores
+      .filter((s) => s.userId && s.userId.role !== 'admin')
+      .map((s) => ({
+        userId: s.userId._id.toString(),
+        name: s.userId.name,
+        email: s.userId.email,
+        score: s.totalScore,
+        dawaThisWeek: dawaCounts.get(s.userId._id.toString()) || 0,
+        dawaWeeklyTarget: DAWA_WEEKLY_TARGET,
+      }));
+
+    return { date, entries: entries.sort((a, b) => b.score - a.score) };
+  }
+
+  /** Map of userId -> count of completed Da'wa entries in the current calendar week (Mon-Sun) up to and including today. */
+  async getWeeklyDawaCompletions(todayKey) {
+    const dawaActivity = await Activity.findOne({ name: DAWA_ACTIVITY_NAME });
+    if (!dawaActivity) return new Map();
+
+    const weekStartKey = moment(todayKey, 'YYYY-MM-DD').startOf('isoWeek').format('YYYY-MM-DD');
+    const entries = await DailyEntry.find({
+      activityId: dawaActivity._id,
+      date: { $gte: weekStartKey, $lte: todayKey },
+      done: true,
+    });
+
+    const counts = new Map();
+    for (const e of entries) {
+      const key = e.userId.toString();
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    return counts;
   }
 
   async getUserDailyBreakdown(userId) {
@@ -151,4 +202,4 @@ class ScoreService {
 }
 
 module.exports = new ScoreService();
-module.exports.constants = { PRAYER_ACTIVITY_NAME, JAMAATH_BONUS_POINTS };
+module.exports.constants = { PRAYER_ACTIVITY_NAME, JAMAATH_BONUS_POINTS, DAWA_ACTIVITY_NAME, DAWA_WEEKLY_TARGET };
